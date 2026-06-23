@@ -1,0 +1,29 @@
+# Workspace packages. Globs match dirs that have a package.json; empty dirs are ignored
+# (so this is green-on-empty and fills in as domains are populated, contract-first).
+packages:
+  - "core/runtime"
+  - "core/gateway"
+  - "core/meetings/services/*"
+  - "core/meetings/modules/*"
+  - "core/agent/services/*"
+  - "core/agent/modules/*"
+  - "core/identity/services/*"
+  - "core/identity/modules/*"
+  - "integrations/in/*"
+  - "integrations/out/*"
+  - "clients/*"
+  - "!clients/dashboard" # vendored full Next.js app (own npm); refactor pending
+  - "!clients/dashboard_new" # fresh modular dashboard — its own npm workspace (modules/*), not pnpm
+  - "sdks/*"
+  - "schemas/*"
+  - "tools/*"
+# Build scripts pnpm may run (pnpm ≥10 blocks postinstall by default). esbuild
+# ships the native binary our TS test runner (tsx) needs; onnxruntime-node (+ its
+# transitive sharp/protobufjs, via @huggingface/transformers in @vexa/mixed-pipeline)
+# fetches the native ONNX runtime the pyannote segmenter runs on in production. The
+# mixed-pipeline goldens are model-free, so the gate stays green even before download.
+allowBuilds:
+  esbuild: true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true
