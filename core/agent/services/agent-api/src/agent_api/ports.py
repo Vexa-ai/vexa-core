@@ -1,0 +1,128 @@
+"""Ports (Hexagonal / Ports & Adapters — P5).
+
+The core depends ONLY on these protocols — "holes" that adapters fill at the composition root.
+A port is what lets the L2 unit test exist (ARCHITECTURE.md §5): every external thing the core
+touches (a user's git repo, the runtime kernel, the transcript bus) is reached through one of
+these, so the core stays offline-provable with in-memory fakes.
+
+Each port is a pure ``Protocol`` — no transport, no I/O, no third-party import. The real adapters
+(git, an HTTP client to runtime.v1, a redis transcript stream) live elsewhere and are wired in by
+the service entrypoint; none of them is imported here.
+"""
+from __future__ import annotations
+
+from typing import Iterable, Optional, Protocol, runtime_checkable
+
+from .models import AgentAction, WorkspaceWrite
+
+
+@runtime_checkable
+class WorkspacePort(Protocol):
+    """Clone / read / commit a USER git repo per ``workspace.v1``.
+
+    The workspace is the agent's durable memory — a user-owned git repo (data, not platform code).
+    The agent clones it, reads existing entities, and commits new/updated ones. Access/sharing and
+    envelope encryption are deferred behind this same port (ADR-0003, P15).
+    """
+
+    def clone(self, repo_url: str, ref: str) -> None:
+        """Make the workspace available locally at ``ref`` (idempotent)."""
+        ...
+
+    def read(self, path: str) -> Optional[str]:
+        """Return the text at ``path`` within the workspace, or None if absent."""
+        ...
+
+    def write(self, write: WorkspaceWrite) -> None:
+        """Stage an entity document (frontmatter + body) at ``write.path``."""
+        ...
+
+    def commit(self, message: str) -> str:
+        """Commit staged changes; return the commit id. No-op commits return ``""``."""
+        ...
+
+
+@runtime_checkable
+class RuntimePort(Protocol):
+    """Spawn / await an agent worker via ``runtime.v1`` (profile ``agent``).
+
+    The control plane never runs the worker in-process — it asks the runtime kernel to spawn it as
+    an ephemeral, stateless workload (P7). The workspace repo URL + a scoped identity token travel
+    in the worker's ``env`` (see golden ``runtime.v1/spec-agent.json``), never as a kernel concept.
+    """
+
+    def spawn(self, workload_id: str, profile: str, env: dict[str, str]) -> str:
+        """Create a workload; return the workloadId the kernel acknowledged."""
+        ...
+
+    def await_done(self, workload_id: str, timeout_sec: float = 0.0) -> str:
+        """Block until the workload reaches a terminal ``runtime.v1`` state; return that state."""
+        ...
+
+
+@runtime_checkable
+class AgentDecisionPort(Protocol):
+    """Decide WHAT a run does from a (validated) transcript — the LLM seam.
+
+    This is the hole the model plugs into. The core hands a ``transcript.v1`` payload to ``decide``
+    and gets back an ``AgentAction`` (the agent's own shape). The default adapter is the existing
+    DETERMINISTIC rule (a fixed transcript→meeting-entity mapping); the real Claude adapter — model +
+    Read/Write/Edit/Bash tooling over the mounted workspace — slots in HERE behind the same signature,
+    OUT OF SCOPE for this increment.
+
+    The point of the seam is governance, not the model: whatever ``decide`` returns, ``core.run``
+    re-validates the emitted frontmatter against ``workspace.v1`` before it can touch the user repo
+    (P8). A decision port — even a hallucinating LLM — CANNOT bypass the contract.
+    """
+
+    def decide(self, payload: dict) -> AgentAction:
+        """Given a validated transcript.v1 payload, return the action this run should take."""
+        ...
+
+
+@runtime_checkable
+class WorkspaceStoragePort(Protocol):
+    """Sync a workspace dir to/from durable object storage (S3/MinIO) — the agent's at-rest memory.
+
+    Mirrors the parent ``workspace.py`` ``aws s3 sync`` up/down: ``sync_down`` hydrates the local
+    workspace before a run, ``sync_up`` persists it after. Implementations honor an exclude list (the
+    ``.claude/.session`` ephemera the parent excludes) and report the object ops performed. The
+    transport (boto3 / a real ``aws s3 sync``) is the adapter's concern; the eval fakes it.
+    """
+
+    def sync_down(self, local_dir: str, *, excludes: tuple[str, ...] = ()) -> list[str]:
+        """Pull objects from storage into ``local_dir``; return the keys fetched."""
+        ...
+
+    def sync_up(self, local_dir: str, *, excludes: tuple[str, ...] = ()) -> list[str]:
+        """Push ``local_dir`` to storage (delete extraneous), honoring excludes; return keys put."""
+        ...
+
+
+@runtime_checkable
+class VcsPort(Protocol):
+    """Push a committed workspace to a per-user GitHub remote over a BROKERED token (P15).
+
+    The token is fetched from the identity ``SecretsPort`` as a redacted ``BrokeredSecret`` and only
+    ``reveal()``-ed at the moment the remote URL is assembled — it MUST NEVER be logged raw. This is
+    the GitHub-per-user seam: each user's workspace pushes to their own repo under their own scoped
+    credential, brokered and audited by identity, never a shared platform key.
+    """
+
+    def push(self, local_dir: str, remote_url: str, ref: str) -> str:
+        """Push ``ref`` from ``local_dir`` to ``remote_url`` using the brokered token; return the sha."""
+        ...
+
+
+@runtime_checkable
+class TranscriptSource(Protocol):
+    """Yield validated ``transcript.v1`` segments.
+
+    This is the ``meetings ⊥ agent`` seam: the agent consumes transcript.v1 by SCHEMA (read by path),
+    never by importing meetings code. An adapter validates each payload against the published JSON
+    Schema before it reaches the core, so the core only ever sees conformant segments.
+    """
+
+    def segments(self, payload: dict) -> Iterable[dict]:
+        """Validate a transcript.v1 payload and yield its ``TranscriptSegment`` objects in order."""
+        ...
