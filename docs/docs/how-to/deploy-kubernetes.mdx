@@ -1,0 +1,49 @@
+---
+title: "Deploy to Kubernetes"
+description: "Production on Helm — the same five services and containers, scheduled by k8s."
+---
+
+Production Vexa runs on **Helm** (`deploy/helm/charts/vexa`): the same five services plus infra, built
+once and pinned by `global.imageTag`. On Kubernetes the [runtime](/core/runtime) spawns the bot and
+agent-worker as **Pods** (`runtime.backend=k8s`, via a chart-provided ServiceAccount/RBAC) instead of
+through the Docker socket — same container model, scheduled by k8s.
+
+## Install
+
+```bash
+helm upgrade --install vexa deploy/helm/charts/vexa -n vexa --create-namespace \
+  --set global.imageTag=YYMMDD-HHMM \
+  --set secrets.adminApiToken=$ADMIN_TOKEN \
+  --set secrets.internalApiSecret=$INTERNAL_API_SECRET \
+  --set secrets.transcriptionServiceToken=$STT_TOKEN \
+  --wait
+```
+
+## Verify
+
+```bash
+kubectl -n vexa port-forward svc/vexa-vexa-gateway 8000:8000 &
+curl -sf localhost:8000/health
+```
+
+Then mint an API key against the admin API and proceed exactly as on compose — see
+[Authentication](/authentication).
+
+## Production options
+
+| Goal | Setting |
+|---|---|
+| Managed Postgres | `postgres.enabled=false` + `database.*` |
+| Managed Redis | `redis.enabled=false` + `redisConfig.*` |
+| Pool managed Postgres | `pgbouncer.enabled=true` |
+| Public ingress | `ingress.enabled=true` (front the gateway) |
+| Pod-spawned workers | `runtime.backend=k8s` (default on the chart) |
+
+Full values table and cookbook:
+[`deploy/helm/README.md`](https://github.com/Vexa-ai/vexa/blob/main/deploy/helm/README.md).
+
+## Air-gapped
+
+Everything runs in-VPC — gateway, services, and redis/postgres/minio in your cluster, transcription on
+your own GPU, [bring-your-own inference](/configuration#agent-inference-bring-your-own), recordings in
+your object storage. **Zero egress.** See [Deployment → Air-gapped](/deployment#air-gapped).
