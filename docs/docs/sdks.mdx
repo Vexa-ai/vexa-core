@@ -48,8 +48,8 @@ Identity is **server-derived** from the key — you never send a user id or subj
 The API is stable and self-describing:
 
 - **Meetings** — `POST /bots`, `GET /transcripts/{platform}/{id}` (poll or WebSocket), `GET /recordings`.
-- **Agent** — `POST /agent/api/chat` (SSE), `POST /agent/api/routines`, `POST /agent/invocations`,
-  `POST /agent/events`, and the `/agent/api/workspace/*` reads.
+- **Agent** — `POST /agent/chat` (SSE), `POST /agent/routines`, `GET /agent/sessions`, `GET /agent/models`,
+  and the `/agent/workspace/*` reads. (`/api/*` is a deprecated alias for the same routes.)
 - **Errors** — conventional status codes with a JSON `detail`; see the [error reference](/api/errors).
 
 Streamed endpoints emit typed frames (SSE / WebSocket) documented per endpoint in the

@@ -12,7 +12,7 @@ Prerequisites: a Linux host (Ubuntu 24.04), Docker, `git`, `curl`.
 
 ```bash
 curl -fsSL https://get.docker.com | sh
-git clone https://github.com/Vexa-ai/vexa-core.git && cd vexa
+git clone https://github.com/Vexa-ai/vexa-core.git && cd vexa-core
 
 make all      # full stack via Docker Compose — each service in its own container
 ```
@@ -43,6 +43,8 @@ meeting (`BROWSER_IMAGE`) and an agent container per dispatch (`AGENT_IMAGE`), t
 - **Transcription (STT)** — `TRANSCRIPTION_SERVICE_URL` / `TRANSCRIPTION_SERVICE_TOKEN`. Unset → bots
   join and capture, but produce no transcript.
 - **Object storage** — MinIO (`MINIO_*`): meeting recordings and agent workspaces live in your bucket.
+  The default `MINIO_HOST_PORT=9000` is a common port — if it's already taken on your host
+  (`make all` fails with `bind … 127.0.0.1:9000 … address already in use`), set a free port in `.env`.
 - **Agent inference** — bring your own: point the agent at your endpoint so no inference leaves the
   network (`VEXA_AGENT_MODEL` / mounted credentials).
 - **Secrets** — `ADMIN_TOKEN`, `INTERNAL_API_SECRET`, DB credentials. Set real values before exposing.
@@ -76,6 +78,42 @@ TRANSCRIPTION_SERVICE_TOKEN=<same as the unit's API_TOKEN>
 Now bots transcribe end-to-end: **bot → transcription service → segments → meeting-api `collector`
 → live fan-out**. Scale by adding workers (one GPU each) in the unit's `docker-compose.yml` +
 `nginx.conf`.
+
+## Publishing behind a reverse proxy
+
+`make all` binds every service to `127.0.0.1` (loopback only). To expose the **terminal** at a public
+hostname, put a TLS-terminating reverse proxy in front of the terminal port (`TERMINAL_PORT`, default
+`13000`) and tell the terminal its public origin so auth cookies and OAuth callbacks are correct:
+
+```bash
+# deploy/compose/.env
+NEXTAUTH_URL=https://your-host.example.com
+NEXTAUTH_SECRET=<a strong random secret>   # don't ship the dev default
+```
+
+An nginx vhost (the terminal proxies `/ws` to the gateway itself, so the proxy only needs standard
+WebSocket-upgrade headers):
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name your-host.example.com;
+    ssl_certificate     /etc/letsencrypt/live/your-host.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/your-host.example.com/privkey.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:13000;       # TERMINAL_PORT
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;   # terminal /ws → gateway
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400;
+    }
+}
+```
+
+The terminal carries its own Google/Microsoft OAuth login, so the proxy needs no auth of its own.
 
 ## Air-gapped
 
