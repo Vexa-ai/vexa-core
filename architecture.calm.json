@@ -571,6 +571,17 @@
       ]
     },
     {
+      "unique-id": "slim",
+      "node-type": "webclient",
+      "name": "slim",
+      "description": "slim \u2014 client",
+      "metadata": [
+        {
+          "path": "clients/slim"
+        }
+      ]
+    },
+    {
       "unique-id": "extension",
       "node-type": "webclient",
       "name": "extension",
