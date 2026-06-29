@@ -15,47 +15,45 @@ derives it from the key.
 
 | Deployment | API base |
 |---|---|
-| Self-hosted (`make lite`) | `http://localhost:8056` |
 | Self-hosted (`make all` / compose) | `http://localhost:18056` (`API_GATEWAY_HOST_PORT`) |
 | Hosted | `https://api.cloud.vexa.ai` |
 
 ## Getting a key
 
-<Tabs>
-  <Tab title="make lite (auto)">
-    Lite mints a key on first boot for zero-login. Retrieve it from the container:
+`make all` mints a key as part of bring-up and **prints it** (along with the service URLs) when the
+stack is ready — copy it from the `make all` output and use it as your `X-API-Key`.
 
-    ```bash
-    docker exec vexa-lite sh -c 'cat /run/vexa/key.env'
-    # VEXA_API_KEY=vxa_bot_...
-    ```
+### Minting more keys
 
-    Or supply your own at startup with `VEXA_API_KEY=...` — your key wins and auto-mint is skipped.
-  </Tab>
-  <Tab title="make all / compose (admin API)">
-    The **admin API** mints keys. It's protected by `ADMIN_API_TOKEN` (set from `ADMIN_TOKEN`,
-    default `changeme` — **change it before exposing anything**) and listens on
-    `http://localhost:18057` by default (`ADMIN_API_PORT`).
+To mint additional keys, use the `provision-token` make target with your `ADMIN_TOKEN` (it's set in
+`.env`, default `dev-admin-token` — **change it before exposing anything**):
 
-    ```bash
-    export ADMIN=http://localhost:18057
-    export ADMIN_TOKEN=changeme        # your ADMIN_TOKEN
+```bash
+make -s provision-token ADMIN_TOKEN=dev-admin-token
+# → prints a freshly minted vxa_... API key
+```
 
-    # 1. create (or find) a user
-    curl -X POST "$ADMIN/admin/users" \
-      -H "X-Admin-API-Key: $ADMIN_TOKEN" -H "Content-Type: application/json" \
-      -d '{"email":"jane@acme.com","name":"Jane","max_concurrent_bots":2}'
-    # → {"id":1,"email":"jane@acme.com","name":"Jane","max_concurrent_bots":2}
+Under the hood the **admin API** mints keys. It listens on `http://localhost:18057` by default
+(`ADMIN_API_PORT`) and is protected by `ADMIN_TOKEN` via the `X-Admin-API-Key` header — you can call it
+directly for finer control over users and scopes:
 
-    # 2. mint a key for that user id
-    curl -X POST "$ADMIN/admin/users/1/tokens?scopes=bot,tx" \
-      -H "X-Admin-API-Key: $ADMIN_TOKEN"
-    # → {"id":7,"token":"vxa_bot_...","user_id":1,"scopes":["bot","tx"]}
-    ```
+```bash
+export ADMIN=http://localhost:18057
+export ADMIN_TOKEN=dev-admin-token        # your ADMIN_TOKEN from .env
 
-    The returned `token` is your `X-API-Key`. **It is shown once** — store it.
-  </Tab>
-</Tabs>
+# 1. create (or find) a user
+curl -X POST "$ADMIN/admin/users" \
+  -H "X-Admin-API-Key: $ADMIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"email":"jane@acme.com","name":"Jane","max_concurrent_bots":2}'
+# → {"id":1,"email":"jane@acme.com","name":"Jane","max_concurrent_bots":2}
+
+# 2. mint a key for that user id
+curl -X POST "$ADMIN/admin/users/1/tokens?scopes=bot,tx" \
+  -H "X-Admin-API-Key: $ADMIN_TOKEN"
+# → {"id":7,"token":"vxa_bot_...","user_id":1,"scopes":["bot","tx"]}
+```
+
+The returned `token` is your `X-API-Key`. **It is shown once** — store it.
 
 ## Scopes
 
@@ -82,10 +80,10 @@ Set an expiry at mint time with `expires_in=<seconds>`; expired keys are rejecte
 
 ## What can go wrong
 
-| Status | Meaning |
-|---|---|
-| `401 Missing API Key` | no `X-API-Key` header |
-| `403 Invalid API Key` | unknown or revoked key |
-| `403 Token scope not authorized` | key lacks the scope this route needs |
+| Status | `detail` | Meaning |
+|---|---|---|
+| `401` | `Missing API key` | no `X-API-Key` header |
+| `401` | `Invalid API key` | unknown or revoked key |
+| `403` | `Token scope not authorized` | key lacks the scope this route needs |
 
 See the full [error reference](/api/errors).

@@ -3,9 +3,9 @@ title: "Configuration"
 description: "Every environment variable the stack reads — what it does and its default."
 ---
 
-Vexa is configured by environment variables, set in `deploy/compose/.env` for Docker Compose or as
-Helm values for Kubernetes. Defaults below are what the stack falls back to when the variable is unset
-— fine for local evaluation, **not** for anything exposed.
+Vexa is configured by environment variables, set in `deploy/compose/.env` for Docker Compose (seeded
+from `.env.example` on first `make all`). Defaults below are what the stack falls back to when the
+variable is unset — fine for local evaluation, **not** for anything exposed.
 
 <Warning>
 Change every secret (`ADMIN_TOKEN`, `INTERNAL_API_SECRET`, DB and MinIO credentials,
@@ -17,8 +17,12 @@ are public.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `TRANSCRIPTION_SERVICE_URL` | — | STT service endpoint. Unset → bots join and record but produce no transcript. |
-| `TRANSCRIPTION_SERVICE_TOKEN` | — | STT auth token (from `vexa.ai/account`, or your self-hosted GPU service). |
+| `TRANSCRIPTION_SERVICE_URL` | — | STT service **base URL** (the client appends `/v1/audio/transcriptions`), e.g. `http://<gpu-host>:8083`. Point it at the bundled service you deploy separately (`deploy/transcription`) or a hosted endpoint. Unset → bots join and record but produce no transcript. |
+| `TRANSCRIPTION_SERVICE_TOKEN` | — | STT auth token — must match the `API_TOKEN` of your `deploy/transcription` unit, or a token from `vexa.ai/account`. |
+
+The STT service is the **GPU workload, deployed separately** from this stack — see
+[Deployment → Transcription](/deployment#transcription-the-separate-gpu-unit). The main stack
+stays GPU-free and reaches it over the network via the two variables above.
 
 ## Secrets & identity
 
@@ -80,13 +84,6 @@ Host ports the compose stack publishes on `127.0.0.1` (override any of them in `
 | `MINIO_HOST_PORT` / `MINIO_CONSOLE_HOST_PORT` | `9000` / `9001` | MinIO API / console |
 
 <Note>
-`make lite` runs everything in one container and publishes a smaller, fixed set —
-gateway `:8056`, dashboard `:3000`, terminal `:3001`, agent `:8100`. The variables above apply to the
-multi-container compose stack (`make all`).
+The gateway (`:18056`) is the one front door; the terminal web workbench is at `:13000`. The other host
+ports above are bound to `127.0.0.1` for local inspection and aren't needed for day-to-day use.
 </Note>
-
-## Kubernetes (Helm)
-
-On Helm the same settings are Helm values (`global.imageTag`, `secrets.*`, `database.*`, `redisConfig.*`,
-`runtime.backend=k8s`, …). Full values table and cookbook:
-[`deploy/helm/README.md`](https://github.com/Vexa-ai/vexa/blob/main/deploy/helm/README.md).

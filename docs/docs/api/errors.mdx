@@ -7,7 +7,7 @@ All public routes are fronted by the gateway and return conventional HTTP status
 follow FastAPI's convention — a JSON object with a `detail` field:
 
 ```json
-{ "detail": "Missing API Key" }
+{ "detail": "Missing API key" }
 ```
 
 `detail` is a human-readable string for client errors, or a list of field errors for request-validation
@@ -20,21 +20,21 @@ failures (`422`).
 | `200` / `201` / `202` | success (`201` create, `202` accepted-for-dispatch) | — |
 | `204` | success, no body (e.g. token deleted, bot stopped) | — |
 | `400` | malformed request — non-conformant envelope on `POST /invocations` | `Invocation envelope is not conformant` |
-| `401` | no credentials — missing `X-API-Key` / `X-Admin-API-Key` | `Missing API Key` |
-| `403` | bad or under-scoped credentials | `Invalid API Key` · `Token scope not authorized for this endpoint` |
-| `404` | resource not found — user, token, meeting, or workspace file | `User not found` · `path not found` |
+| `401` | missing or invalid API key — no/unknown/revoked `X-API-Key` | `Missing API key` · `Invalid API key` |
+| `403` | under-scoped key, or bad/missing admin token | `Token scope not authorized for this endpoint` · `Invalid or missing admin token.` |
+| `404` | resource not found — user, token, meeting, or workspace file | `User not found` · `not found` |
 | `422` | semantic validation failed — bad field, invalid scope, event with no plan | `Invalid scope(s): ['foo']. Valid: ['bot', 'browser', 'tx']` |
 | `500` | unexpected server error | — |
 
 ## By surface
 
 **Authentication / admin** (`/admin/*`)
-- `401` missing `X-Admin-API-Key`; `403` wrong admin token.
+- `403` on a missing **or** wrong admin token (`detail: "Invalid or missing admin token."`).
 - `404` minting a token for a non-existent user id.
 - `422` minting with an invalid scope (valid: `bot`, `tx`, `browser`).
 
 **Meetings API** (`/bots`, `/transcripts/*`)
-- `401`/`403` on a missing or invalid `X-API-Key`.
+- `401` on a missing or invalid `X-API-Key`; `403` when the key lacks the route's scope.
 - `404` reading a transcript for a meeting that was never started.
 - A bot that fails to join surfaces in `GET /bots/status` rather than as an HTTP error on `POST /bots`
   — see [Troubleshooting](/troubleshooting#bot-wont-join).
@@ -42,7 +42,7 @@ failures (`422`).
 **Agent API** (`/agent/*`)
 - `POST /invocations` → `400` if the `unit.v1` envelope is non-conformant.
 - `POST /events` → `400` if the `event.v1` event is non-conformant; **`422` if the event carries no plan**.
-- Workspace reads → `404` if the path is absent (`GET /api/workspace/file?path=...`).
+- Workspace reads → `404` (`detail: "not found"`) if the path is absent (`GET /api/workspace/file?path=...`).
 
 ## Streaming errors
 

@@ -4,19 +4,19 @@ description: "The canonical interface is the REST API; published libraries wrap 
 ---
 
 Vexa's contract is its **HTTP API** — the [Meetings API](/api/meetings) and [Agent API](/api/agent) are
-the same surface whether you self-host or use the hosted service. Any HTTP client works; the libraries
-below exist for convenience.
+the same surface whether you self-host or use the hosted service. Any HTTP client works.
 
-## Published libraries
+## What ships today
 
-| Library | What it is |
-|---|---|
-| **vexa-client** | Typed client wrapping the public API — send bots, read transcripts, dispatch agents. |
-| **vexa-cli** | Command-line interface over the same surface, for scripts and quick operations. |
-| **transcript-rendering** | Helpers for rendering diarized, word-timestamped transcripts. |
+The open-core ships two ways to drive Vexa:
 
-Source and install instructions live with each package in the
-[Vexa repository](https://github.com/Vexa-ai/vexa/tree/main/sdks).
+- **The HTTP API** — the canonical interface. Every capability is reachable over plain REST + WebSocket;
+  see the [API reference](/api/agent).
+- **The terminal** — the bundled browser-based [workbench](/architecture/modules) (Next.js), a thin
+  client over the same API. It comes up with `make all` at `http://localhost:13000`.
+
+Language SDKs (typed clients / CLI wrappers) are **on the roadmap** — until then, call the API directly
+or generate a client from the OpenAPI surface.
 
 ## Prefer raw HTTP?
 

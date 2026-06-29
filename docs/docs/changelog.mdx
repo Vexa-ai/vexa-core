@@ -4,7 +4,7 @@ description: "Release notes and what changes between major versions."
 ---
 
 The authoritative, per-release changelog is on **GitHub Releases**:
-[github.com/Vexa-ai/vexa/releases](https://github.com/Vexa-ai/vexa/releases). This page summarizes the
+[github.com/Vexa-ai/vexa-core/releases](https://github.com/Vexa-ai/vexa-core/releases). This page summarizes the
 notable line and the migration notes between majors.
 
 ## 0.12 — control-plane carve
@@ -18,8 +18,8 @@ notable line and the migration notes between majors.
   for identity. See [Authentication](/authentication) and [Identity & trust](/architecture/identity-and-trust).
 - **Agent control plane.** Dispatch, chat, routines, events, and workspace reads are unified under the
   [Agent API](/api/agent) at the `/agent/*` prefix (the legacy `/api/*` alias still resolves).
-- **Helm-first production.** Kubernetes deploys via the `deploy/helm/charts/vexa` chart; the runtime
-  spawns bots and agent workers as Pods (`runtime.backend=k8s`). See [Deploy to Kubernetes](/how-to/deploy-kubernetes).
+- **Compose-based self-host.** The open core brings the whole control plane up with `make all` (Docker
+  Compose) on a single Linux host. See [Deployment](/deployment).
 
 ### Migrating from 0.10
 
@@ -36,4 +36,4 @@ notable line and the migration notes between majors.
 
 Vexa follows semantic-ish versioning at the `MAJOR.MINOR` line; breaking changes are called out in the
 GitHub release notes and mirrored in the migration section above. Pin a specific image with `IMAGE_TAG`
-(compose) or `global.imageTag` (Helm) so deploys are reproducible.
+so deploys are reproducible.

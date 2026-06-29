@@ -48,7 +48,7 @@ them.
 
 <CardGroup cols={2}>
   <Card title="Quickstart" icon="rocket" href="/deployment">
-    Self-host the full stack with one `make` command. Up in minutes on a single Linux host.
+    Self-host the full stack with one `make all`. Up in minutes on a single Linux host.
   </Card>
   <Card title="Concepts" icon="cube" href="/concepts">
     The five primitives everything composes from — workspace, agent, container, identity, scheduler.
@@ -66,19 +66,19 @@ them.
 - **Captures meetings natively** — real-time transcripts from [Google Meet, Zoom, and Teams](/core/meetings), no plugins or recorders. **Whisper included**.
 - **Turns knowledge into code** — meetings and emails become a living, Markdown [workspace](/concepts#workspace) that agents treat as their working directory.
 - **Runs agents safely** — every [agent](/core/agents) executes in an isolated, ephemeral [container](/concepts#container): no egress except through brokered tools, thousands in parallel, no lateral movement.
-- **Cloud-native deployment** — runs anywhere: a single container, [Docker Compose](/deployment), or [Kubernetes (Helm)](/deployment) — scale from a laptop to a cluster.
+- **Cloud-native deployment** — self-host the whole stack with [Docker Compose](/deployment) on a single Linux host.
 - **Stays in your environment** — open-source, self-hostable, air-gappable, with [bring-your-own inference](/deployment#air-gapped). Recordings and agent state never leave infrastructure you control.
 
 ## Try it
 
 ```bash
-git clone https://github.com/Vexa-ai/vexa.git && cd vexa
-make lite     # single container, all services — for evaluation
+git clone https://github.com/Vexa-ai/vexa-core.git && cd vexa
+make all      # full stack via Docker Compose — seeds .env, brings everything up, prints your API key + URLs
 ```
 
-The API comes up at `http://localhost:8056` (gateway) and the web UI at
-`http://localhost:3000`. Full options — Docker Compose, Helm, air-gapped — in
-[Deployment](/deployment).
+The API comes up at `http://localhost:18056` (gateway) and the terminal web
+workbench at `http://localhost:13000`. Full options — air-gapped, bring-your-own
+inference — in [Deployment](/deployment).
 
 ## Why Vexa
 
