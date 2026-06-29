@@ -131,6 +131,17 @@
       ]
     },
     {
+      "unique-id": "transcription",
+      "node-type": "service",
+      "name": "transcription",
+      "description": "transcription \u2014 STT service (faster-whisper / CTranslate2, OpenAI-compatible /v1/audio/transcriptions). The GPU workload, deployed separately from the main stack; the bot streams audio windows to it and receives segments. Does not write any redis carrier (the bot XADDs segments).",
+      "metadata": [
+        {
+          "path": "core/meetings/services/transcription"
+        }
+      ]
+    },
+    {
       "unique-id": "desktop",
       "node-type": "service",
       "name": "desktop",
@@ -1007,6 +1018,24 @@
       "metadata": [
         {
           "access": "write"
+        }
+      ]
+    },
+    {
+      "unique-id": "bot-calls-transcription",
+      "relationship-type": {
+        "connects": {
+          "source": {
+            "node": "bot"
+          },
+          "destination": {
+            "node": "transcription"
+          }
+        }
+      },
+      "metadata": [
+        {
+          "access": "request"
         }
       ]
     },

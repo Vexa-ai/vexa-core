@@ -64,7 +64,7 @@
       },
       {
         "group": "Deployment & operations",
-        "pages": ["deployment", "how-to/deploy-kubernetes", "configuration", "troubleshooting", "sdks", "changelog"]
+        "pages": ["deployment", "configuration", "troubleshooting", "sdks", "changelog"]
       },
       {
         "group": "Roadmap",

@@ -12,8 +12,8 @@ Connect to `/ws` on the gateway and authenticate with your API key — as a head
 query parameter when the client can't set headers:
 
 ```
-ws://localhost:8056/ws          # header:  X-API-Key: <API_KEY>
-ws://localhost:8056/ws?api_key=<API_KEY>
+ws://localhost:18056/ws          # header:  X-API-Key: <API_KEY>
+ws://localhost:18056/ws?api_key=<API_KEY>
 ```
 
 A missing key gets a `missing_api_key` error frame; an invalid key is rejected with close code **4401**.
@@ -50,7 +50,7 @@ lands. `health` frames surface engine/no-signal faults in-band.
 ```js
 import { WebSocket } from "ws";
 
-const ws = new WebSocket("ws://localhost:8056/ws", { headers: { "X-API-Key": process.env.API_KEY } });
+const ws = new WebSocket("ws://localhost:18056/ws", { headers: { "X-API-Key": process.env.API_KEY } });
 
 ws.on("open", () => ws.send(JSON.stringify({
   action: "subscribe",

@@ -34,10 +34,10 @@ The bot is capturing audio, but transcription isn't configured.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `401 Missing API Key` | no `X-API-Key` header | add the header |
-| `403 Invalid API Key` | unknown or revoked key | mint a fresh one ([Authentication](/authentication)) |
+| `401 Missing API key` | no `X-API-Key` header | add the header |
+| `401 Invalid API key` | unknown or revoked key | mint a fresh one ([Authentication](/authentication)) |
 | `403 Token scope not authorized` | key lacks the route's scope | mint with the right `scopes=` |
-| `403` on `/admin/*` | wrong `ADMIN_TOKEN` | use the `X-Admin-API-Key` matching your `ADMIN_TOKEN` |
+| `403 Invalid or missing admin token.` on `/admin/*` | missing or wrong `ADMIN_TOKEN` | use the `X-Admin-API-Key` matching your `ADMIN_TOKEN` |
 
 ## Containers don't spawn (self-host)
 
@@ -46,8 +46,6 @@ The [runtime](/core/runtime) spawns bot and agent containers via the Docker sock
 - The runtime needs access to the host Docker socket and the right group — set `DOCKER_GID` to the host's
   docker group id.
 - Pull failures: confirm `BROWSER_IMAGE` and `AGENT_IMAGE` resolve and `IMAGE_TAG` matches what you built.
-- On Kubernetes the runtime spawns **Pods** instead (`runtime.backend=k8s`); check the chart's
-  ServiceAccount/RBAC if Pods aren't created.
 
 ## Agent write was rejected
 
@@ -59,11 +57,13 @@ write is rejected, check that the dispatch's trigger is `message`/`scheduled` (w
 
 ## The stack won't come up
 
-- `make lite` waits up to 3 minutes for the gateway; check `docker logs vexa-lite`.
+- `make all` brings the compose stack up health-gated; tail the logs with `make logs` or
+  `docker compose -p vexa-v012 logs -f` to see which service is wedged.
 - Port already in use → override the host port (e.g. `API_GATEWAY_HOST_PORT`) in `deploy/compose/.env`.
-- Wipe and restart lite: `make down` then `docker volume rm vexa-lite-pgdata vexa-lite-miniodata`.
+- Wipe and restart from clean: `make down` (or `docker compose -p vexa-v012 down -v` to drop the
+  postgres + minio volumes too), then `make all`.
 
 ## Still stuck?
 
-Open an issue or ask on the [GitHub repo](https://github.com/Vexa-ai/vexa). Include the failing request,
+Open an issue or ask on the [GitHub repo](https://github.com/Vexa-ai/vexa-core). Include the failing request,
 the response (status + `detail`), and the relevant `docker logs`.
