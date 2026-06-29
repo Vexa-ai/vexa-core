@@ -42,11 +42,11 @@ failures (`422`).
 **Agent API** (`/agent/*`)
 - `POST /invocations` → `400` if the `unit.v1` envelope is non-conformant.
 - `POST /events` → `400` if the `event.v1` event is non-conformant; **`422` if the event carries no plan**.
-- Workspace reads → `404` (`detail: "not found"`) if the path is absent (`GET /api/workspace/file?path=...`).
+- Workspace reads → `404` (`detail: "not found"`) if the path is absent (`GET /agent/workspace/file?path=...`).
 
 ## Streaming errors
 
-Streamed endpoints (`POST /agent/api/chat`, `GET /api/meeting/stream`) open with `200` and report
+Streamed endpoints (`POST /agent/chat`, `GET /agent/meeting/stream`) open with `200` and report
 problems **in-band** as SSE frames, not as a status code:
 
 - `rejected` — a write was blocked by governance; the frame carries `violations`.

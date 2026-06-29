@@ -85,7 +85,7 @@ Every captured meeting compiles into your **workspace** — a Markdown knowledge
 and writes like a developer in a repo. Chat with it:
 
 ```bash
-curl -N -X POST "$API_BASE/agent/api/chat" \
+curl -N -X POST "$API_BASE/agent/chat" \
   -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
   -d '{"prompt":"What did we decide in my last meeting?"}'
 ```

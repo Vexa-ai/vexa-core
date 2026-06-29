@@ -11,15 +11,15 @@ API key; you never pass a subject.
 
 ```bash
 # the file tree
-curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/api/workspace/tree"
+curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/workspace/tree"
 # → { "files": ["kg/entities/acme.md", "meetings/2026-06-29-acme.md", ...] }
 
 # one file's content (404 if absent)
-curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/api/workspace/file?path=kg/entities/acme.md"
+curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/workspace/file?path=kg/entities/acme.md"
 # → { "path": "...", "content": "..." }
 
 # git state — branch, uncommitted changes, recent commits
-curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/api/workspace/git"
+curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/workspace/git"
 ```
 
 Pass `hidden=true` to `tree` to include dotfiles. `git` is the durable state and the undo — every agent
@@ -30,7 +30,7 @@ write is a commit.
 Add files to the workspace so agents can ground on them (multipart; ≤25 MB each):
 
 ```bash
-curl -X POST "$API_BASE/agent/api/workspace/upload" \
+curl -X POST "$API_BASE/agent/workspace/upload" \
   -H "X-API-Key: $API_KEY" \
   -F "files=@./contract.pdf" -F "files=@./notes.md"
 # → { "files": [ { "name": "contract.pdf", "path": "..." }, ... ] }
@@ -41,7 +41,7 @@ curl -X POST "$API_BASE/agent/api/workspace/upload" \
 Idempotent — seeds the workspace if it doesn't exist yet:
 
 ```bash
-curl -X POST "$API_BASE/agent/api/workspace/init" -H "X-API-Key: $API_KEY"
+curl -X POST "$API_BASE/agent/workspace/init" -H "X-API-Key: $API_KEY"
 # → 201 { "workspace": "...", "seeded": true, "already_initialized": false }
 ```
 
@@ -50,7 +50,7 @@ curl -X POST "$API_BASE/agent/api/workspace/init" -H "X-API-Key: $API_KEY"
 Swap in an external git repo as the active workspace — the current one is **parked**, not lost:
 
 ```bash
-curl -X POST "$API_BASE/agent/api/workspace/swap" \
+curl -X POST "$API_BASE/agent/workspace/swap" \
   -H "X-API-Key: $API_KEY" -H "Content-Type: application/json" \
   -d '{"repo":"https://github.com/acme/knowledge.git","ref":"main","token":"<git-token>"}'
 ```
@@ -58,7 +58,7 @@ curl -X POST "$API_BASE/agent/api/workspace/swap" \
 Omit `repo` to swap back to the seed workspace. Check what's attached:
 
 ```bash
-curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/api/workspace/attached"
+curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/workspace/attached"
 # → { "active": {...}, "parked": [...] }
 ```
 

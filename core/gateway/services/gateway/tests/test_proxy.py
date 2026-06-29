@@ -80,7 +80,7 @@ def test_rate_limit_does_not_apply_when_unconfigured():
 
 
 @pytest.mark.xfail(
-    reason="FINDING terminal-p20-complete-mediation: GET /api/meeting/stream forwards WITHOUT a "
+    reason="FINDING terminal-p20-complete-mediation: GET /agent/meeting/stream forwards WITHOUT a "
     "per-meeting ownership check (gateway app.py agent_meeting_stream → _forward_stream). Any "
     "authenticated user can stream any meeting's live transcript by passing its native id — the "
     "WS /ws path authorizes via authorize_subscribe, the SSE path does not. Fix is lane:contract "
@@ -93,7 +93,7 @@ def test_meeting_stream_denies_a_meeting_the_user_does_not_own():
     own must be denied (403), not silently forwarded. auth_map is EMPTY → the user owns no meeting."""
     client, _ = _client(authorizer=FakeAuthorizer(auth_map={}))
     r = client.get(
-        "/api/meeting/stream",
+        "/agent/meeting/stream",
         headers=AUTH,
         params={"meeting_id": "someone-elses-native", "platform": "google_meet",
                 "session_uid": "someone-elses-native"},
