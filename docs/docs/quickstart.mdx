@@ -20,6 +20,7 @@ with one command.
 curl -fsSL https://get.docker.com | sh
 git clone https://github.com/Vexa-ai/vexa-core.git && cd vexa-core
 make all          # full Docker Compose stack — seeds .env, builds, and prints your API key
+make bot          # build the meeting bot from source — needed before a bot can join (§2′)
 ```
 
 `make all` brings up the whole stack and **prints an API key + your URLs** when it finishes:
