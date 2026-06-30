@@ -1,6 +1,6 @@
-# Contributing to Vexa Core
+# Contributing to Vexum Core
 
-Thanks for your interest in contributing. Vexa Core is an open-source, Apache-2.0,
+Thanks for your interest in contributing. Vexum Core is an open-source, Apache-2.0,
 self-hostable meeting-intelligence runtime, contributed to the Fintech Open Source
 Foundation (FINOS).
 
@@ -30,7 +30,7 @@ third-party code you introduce must be Apache-2.0-compatible.
 
 ## Repository structure
 
-Vexa Core is microservices, each internally a modular monolith, contract-bounded
+Vexum Core is microservices, each internally a modular monolith, contract-bounded
 at two scales (published JSON-Schema contracts between services, ports within).
 Work in the domain your change belongs to:
 
