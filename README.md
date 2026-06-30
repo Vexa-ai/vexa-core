@@ -3,8 +3,9 @@
 Turn meetings and docs into knowledge that sandboxed agents act on.
 
 The clean reimplementation. **Microservices, each internally a modular monolith — contract-bounded at
-two scales** (published schemas between services, ports within). See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md):
-the constitution (P1–P21), the gate suite, and the development process.
+two scales** (published schemas between services, ports within). See the
+[architecture docs](docs/docs/architecture/README.md): modules, dispatch, execution, streaming,
+governance, and identity/trust.
 
 ## Layout
 | Dir | Role |
@@ -22,7 +23,10 @@ the constitution (P1–P21), the gate suite, and the development process.
 | `tools/` · `deploy/` · `docs/` | dev tooling · deployment topologies · docs + ADRs |
 
 ## Gates — the compliance bar (green or it didn't happen, P9)
-`pnpm gates` runs **readme · isolation · exports · graph · schema**; plus `pnpm typecheck build test`.
+In this open-core repo the runnable checks are `pnpm typecheck build test` and the compose
+stack-readiness proof — `make -C deploy/compose stack-test` (the `gate:compose` proof, which stands the
+full stack up, proves it, and tears it down). The full P9 gate suite (`pnpm gates`: readme · isolation ·
+exports · graph · schema, plus contract/arch sealing) runs in the upstream product and is not shipped here.
 An artifact "exists" only when gate-green.
 
 ## Status
