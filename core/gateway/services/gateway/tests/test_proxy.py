@@ -113,6 +113,18 @@ def test_identity_headers_injected_and_spoof_stripped():
     assert fwd["x-api-key"] == VALID_KEY
 
 
+def test_meeting_intent_put_forwards_to_meeting_api():
+    """The Meetings surface's Schedule/Cancel action PUTs the user-owned intent; the gateway must
+    forward it verbatim to meeting-api's PUT /meetings/{platform}/{native}/intent. Regression: this
+    route was missing, so the action 404'd at the gateway (and 405'd at the terminal proxy)."""
+    client, downstream = _client()
+    r = client.put("/meetings/google_meet/abc/intent", headers=AUTH, json={"intent": "scheduled"})
+    assert r.status_code == 200
+    assert downstream.last["method"] == "PUT"
+    assert downstream.last["url"].endswith("/meetings/google_meet/abc/intent")
+    assert "meeting-api" in downstream.last["url"]
+
+
 def test_downstream_target_url_matches_route_table():
     """v0.12 P2: the transcription-collector is folded INTO meeting-api (one modular monolith), so
     /transcripts + /meetings forward to the SAME meeting-api base as /bots — there is no longer a

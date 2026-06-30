@@ -52,7 +52,6 @@ COPY pnpm-workspace.yaml pnpm-lock.yaml package.json tsconfig.base.json turbo.js
 # dirs and the bot depends on none of them, so they are intentionally NOT copied (COPYing an absent
 # dir fails the build).
 COPY core ./core
-COPY scripts ./scripts
 # NB: `schemas/` is a pnpm-workspace glob that is green-on-empty (no packages in
 # this carved tree) — it isn't present, so it's intentionally not COPYed here.
 
