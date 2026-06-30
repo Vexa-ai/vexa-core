@@ -68,11 +68,10 @@ Architecture deep-dive: [docs.core.vexa.ai/architecture](https://docs.core.vexa.
 
 ## Status
 
-Honest current state ([full tracker](https://docs.core.vexa.ai/roadmap/status)):
+Current state ([full tracker](https://docs.core.vexa.ai/roadmap/status)):
 
 - **Proven in production (pre-existing Vexa):** the runtime (meeting bots as browser workloads), transcription → `transcript.v1`, redis streaming.
 - **Built & proven live — the dispatch core:** a `unit.v1` dispatch runs in a runtime-spawned isolated container over a bind-mounted workspace, carrying a per-dispatch signed identity token, streaming events to SSE; chat memory is durable. Verified end-to-end on Docker and through the terminal.
-- **Designed & frozen:** the five primitives, the identity layer (kagenti-aligned), the governance model.
 - **On the roadmap:** auth-spine + owner-checks, bucket/transcript/token encryption, calendar + email integrations. `agent · identity · gateway` are hardening; contract-conformance gates + golden fixtures ship in-repo.
 
 ## FINOS contribution
