@@ -31,6 +31,11 @@ to record, research, or restructure knowledge, you **write it into this repo** a
 
 ## How to work
 
+- **The user is a node too — exactly one `person` with `self: true`.** This workspace ships seeded with
+  the FINOS (Fintech Open Source Foundation) ecosystem graph; the **owner** (the user) is the single
+  `person` entity whose frontmatter carries `self: true`. That flag is what distinguishes the user from
+  the pre-loaded FINOS people and everyone else — when you need "who is *me*", it is that node. Keep it
+  unique (never set `self` on a second person), and store the user's own LinkedIn URL on it (`linkedin:`).
 - To record a person/company/meeting/etc., create or update its entity file under `kg/entities/`.
 - For recurring or scheduled work, use the **scheduling** skill.
 - Keep facts dated and attributed where it helps. Do not invent — only record what you were given or

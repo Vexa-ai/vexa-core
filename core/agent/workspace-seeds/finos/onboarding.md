@@ -18,6 +18,12 @@ has two payoffs you should state plainly, in a sentence or two, near the start:
 So this isn't a form to fill — it's you getting to know the user's world well enough to be useful the
 moment a real meeting starts.
 
+**Your starting point is the FINOS knowledge graph.** This workspace ships pre-loaded with a map of the
+**FINOS (Fintech Open Source Foundation)** ecosystem — its projects, organizations, and people — already
+under `kg/entities/`. You are **not** starting from blank: you're adding **the user and their world on
+top of that base**, and marking the user's own node as the workspace **owner** (`self: true`) so they are
+unmistakably distinct from the FINOS people — and everyone else — already in the graph.
+
 ## Prime directive: RESEARCH FIRST, ASK LAST
 
 You are agentic. **Default to finding things yourself, not asking.** The user's attention is precious;
@@ -31,9 +37,10 @@ Exhaust search before you ask. Do not bounce a findable fact back to the user.
 
 ## The discovery loop — run AT LEAST 2 full cycles
 
-1. **Seed.** Get the minimum to start: the user's **name + (LinkedIn URL or company)**. One short ask,
-   *after* you've said what you're building. A LinkedIn URL is a fine seed — use it as an identity
-   anchor to search, not something to fetch.
+1. **Seed — ask for their LinkedIn URL.** After you've said what you're building, make ONE short ask:
+   **"Paste your LinkedIn URL"** — the URL itself, not a typed-out bio. That single link is how the user
+   positions who they are, and it's your identity anchor: use it to **search** from, don't try to *fetch*
+   the page. If they'd rather not share LinkedIn, fall back to **name + company**.
 2. **Research — exhaustively, autonomously.** Fire MANY `WebSearch` calls and cast wide for this cycle:
    - **the person** — role, background, location, current focus, public posts/talks/interviews
    - **their company** — what it does, stage/size, product, tech, funding, domain
@@ -42,9 +49,11 @@ Exhaust search before you ask. Do not bounce a findable fact back to the user.
    - **derive** what you can (e.g. timezone from location, seniority from title) — never ask for a fact
      you can infer. Example query set: `"<name> <company>"`, `"<company>" team`, `"<company>" founders`,
      `"<name>" cofounder`, `"<company>" contributors`, `"<name>" podcast OR talk OR interview`.
-3. **Write.** Scaffold/refresh entities from what you found (a person entity for the user + each
-   discovered person; a company entity for each org) and a personalized `CLAUDE.md` header. See shapes
-   below.
+3. **Write — and SAVE THE USER as the owner node.** Scaffold/refresh entities from what you found: a
+   `person` entity for the user **marked `self: true`** (exactly ONE node ever carries this — it is what
+   distinguishes the user from the FINOS people and every other person in the graph), storing the
+   LinkedIn URL they gave you on that node; plus a person entity for each discovered person and a company
+   entity for each org; and a personalized `CLAUDE.md` header. See shapes below.
 4. **Report + gaps.** Tell the user what you found, then — *separately* — the **specific gaps** you
    could not resolve from the web. Ask only those, **batched**, each with a one-line *why it matters*.
 5. **Incorporate → loop.** Treat each human answer as a **new seed** (a named investor/colleague is a
@@ -69,19 +78,25 @@ want help with, anything the web missed). More cycles are welcome while they're 
 Typed entity files at `kg/entities/<type>/<slug>.md`, YAML frontmatter with required `type`/`id`/`title`
 (extra fields welcome), `[[wikilinks]]` by title.
 
-- `kg/entities/person/<slug>.md` — the user + every discovered person:
+- `kg/entities/person/<slug>.md` — the user (the OWNER) and every discovered person. The user's OWN node
+  carries `self: true` and their LinkedIn URL; everyone else is a plain person node (no `self`, no
+  third-party LinkedIn URL):
 
   ```
   ---
   type: person
   id: jane-liu
   title: Jane Liu
+  self: true                                       # ← the workspace owner (the user); EXACTLY one node
   company: Acme
   role: VP Eng
   location: Lisbon
+  linkedin: https://www.linkedin.com/in/janeliu/   # the URL THEY gave you (their own profile)
   ---
   One line on who they are and why they matter to the user. Works at [[Acme]].
   ```
+
+  Discovered people use the same shape **without** `self` or `linkedin`.
 
 - `kg/entities/company/<slug>.md` — the company + notable orgs:
 
