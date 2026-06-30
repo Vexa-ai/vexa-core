@@ -310,6 +310,14 @@ def create_app(
     async def meeting(meeting_id: int, request: Request):
         return await _forward("GET", _meeting(f"/meetings/{meeting_id}"), request)
 
+    # User-owned scheduling intent (schedule/cancel) — the Meetings surface's Schedule/Cancel action
+    # PUTs here; forwards to meeting-api's PUT /meetings/{platform}/{native}/intent (owner-scoped).
+    @app.put("/meetings/{platform}/{native_meeting_id}/intent")
+    async def set_meeting_intent(platform: str, native_meeting_id: str, request: Request):
+        return await _forward(
+            "PUT", _meeting(f"/meetings/{platform}/{native_meeting_id}/intent"), request
+        )
+
     # ---- the AGENT domain (P20·Stage 2): the gateway fronts agent-api under the canonical /agent/*
     # prefix so the SAME edge resolves key → user and injects X-User-Id; agent-api derives `subject`
     # from it (never the client). The terminal therefore talks ONLY to the gateway (one authenticated
@@ -348,7 +356,7 @@ def create_app(
     async def agent_meeting_stream(request: Request):
         return await _forward_stream("GET", _agent("meeting/stream"), request)
 
-    @app.api_route("/agent/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+    @app.api_route("/agent/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
     async def agent_proxy(path: str, request: Request):
         return await _forward(request.method, _agent(path), request)
 

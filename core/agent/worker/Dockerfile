@@ -39,7 +39,7 @@ COPY core/agent/worker ./worker
 COPY core/agent/shared ./shared
 COPY core/agent/contracts ./contracts
 # The registry of per-person workspace templates the worker seeds new workspaces from (Phase 3) +
-# the tool registry. workspace-seeds/<name>/ — one validated seed per subdir (today: default).
+# the tool registry. workspace-seeds/<name>/ — one validated seed per subdir (today: default, finos).
 COPY core/agent/workspace-seeds ./workspace-seeds
 COPY core/agent/tools-seed ./tools-seed
 

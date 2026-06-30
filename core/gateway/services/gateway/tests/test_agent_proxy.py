@@ -71,6 +71,17 @@ def test_agent_write_methods_forward():
     assert downstream.last["url"] == "http://agent-api/api/routines/daily/enabled"
 
 
+def test_agent_patch_method_forwards():
+    """PATCH reaches agent-api too — the Routines surface toggles enable/disable via PATCH
+    (routinesApi.setRoutineEnabled), and agent-api defines @app.patch(.../enabled). Regression:
+    PATCH was absent from the proxy's methods list, so the toggle 405'd before any downstream hop."""
+    client, downstream = _client()
+    client.patch("/agent/routines/daily/enabled", headers=AUTH, json={"enabled": False})
+    assert downstream.last["method"] == "PATCH"
+    assert downstream.last["url"] == "http://agent-api/api/routines/daily/enabled"
+    assert downstream.last["headers"]["x-user-id"] == "7"  # resolved user, injected downstream
+
+
 def test_chat_is_streamed_not_buffered_with_injected_user():
     """POST /api/chat returns an SSE stream (text/event-stream), relays the downstream chunks, and
     carries the injected X-User-Id (so the streamed turn is scoped to the authenticated user)."""
