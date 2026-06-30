@@ -62,10 +62,11 @@ down:
 
 ## _access — wait for admin-api, mint the self-host API key, print it + the URLs (used by `up`).
 _access:
-	@ADMIN_TOKEN=$$(grep -E '^ADMIN_TOKEN=' .env | cut -d= -f2-); \
-	 APORT=$$(grep -E '^ADMIN_API_PORT=' .env | cut -d= -f2-); APORT=$${APORT:-18057}; \
-	 GW=$$(grep -E '^API_GATEWAY_HOST_PORT=' .env | cut -d= -f2-); GW=$${GW:-18056}; \
-	 UI=$$(grep -E '^TERMINAL_PORT=' .env | cut -d= -f2-); UI=$${UI:-13000}; \
+	@_envv() { grep -E "^$$1=" .env | head -1 | cut -d= -f2- | sed -E 's/[[:space:]]+#.*$$//; s/[[:space:]]+$$//'; }; \
+	 ADMIN_TOKEN=$$(_envv ADMIN_TOKEN); \
+	 APORT=$$(_envv ADMIN_API_PORT); APORT=$${APORT:-18057}; \
+	 GW=$$(_envv API_GATEWAY_HOST_PORT); GW=$${GW:-18056}; \
+	 UI=$$(_envv TERMINAL_PORT); UI=$${UI:-13000}; \
 	 echo "⏳ minting your self-host API key..."; \
 	 KEY=""; for i in $$(seq 1 60); do \
 	   KEY=$$(ADMIN_TOKEN=$$ADMIN_TOKEN ADMIN_API_URL=http://127.0.0.1:$$APORT EMAIL=$(EMAIL) SCOPES=$(SCOPES) ./bin/provision-token 2>/dev/null) && [ -n "$$KEY" ] && break; \

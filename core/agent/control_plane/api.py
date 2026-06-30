@@ -190,6 +190,17 @@ class ChatBody(BaseModel):
     active: Optional[dict] = None
 
 
+class ResetBody(BaseModel):
+    """Body for POST /api/chat/reset — the docs (api/agent.mdx) say it's just ``{session?}``. reset only
+    needs the session; ``prompt``/``subject``/``active`` are accepted-and-ignored so a client reusing the
+    chat-body shape doesn't 422 (reset must NOT require a prompt the way the chat turn does)."""
+    model_config = {"extra": "forbid"}
+    session: Optional[str] = None
+    subject: Optional[str] = None
+    prompt: Optional[str] = None
+    active: Optional[dict] = None
+
+
 class RoutineCreate(BaseModel):
     """The Routines surface / ``/routine`` create form — compiles to a routine.v1 + a schedule.v1 job."""
     model_config = {"extra": "forbid"}
@@ -517,7 +528,7 @@ def create_app(
         )
 
     @app.post("/api/chat/reset")
-    def chat_reset(body: ChatBody, request: Request):
+    def chat_reset(body: ResetBody, request: Request):
         """Drop a conversation thread: remove it from the index AND delete its continuity file so a
         future turn on the same name starts a fresh conversation (not a resume of the old one)."""
         subject = subject_of(request)
