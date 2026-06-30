@@ -7,7 +7,7 @@
 [![Live demo](https://img.shields.io/badge/demo-core.vexa.ai-brightgreen)](https://core.vexa.ai)
 [![FINOS](https://img.shields.io/badge/FINOS-contribution%20proposed-orange)](https://github.com/finos/community/issues/420)
 
-> **▶ Try the live demo: [core.vexa.ai](https://core.vexa.ai)** — the Vexa Terminal workbench, running this codebase.
+> **▶ Try the live demo: [core.vexa.ai](https://core.vexa.ai)** — the Vexum Terminal workbench, running this codebase.
 > **📖 Full documentation: [docs.core.vexa.ai](https://docs.core.vexa.ai)**
 
 ---
@@ -70,7 +70,7 @@ Architecture deep-dive: [docs.core.vexa.ai/architecture](https://docs.core.vexa.
 
 Current state ([full tracker](https://docs.core.vexa.ai/roadmap/status)):
 
-- **Proven in production (pre-existing Vexa):** the runtime (meeting bots as browser workloads), transcription → `transcript.v1`, redis streaming.
+- **Proven in production (pre-existing Vexum):** the runtime (meeting bots as browser workloads), transcription → `transcript.v1`, redis streaming.
 - **Built & proven live — the dispatch core:** a `unit.v1` dispatch runs in a runtime-spawned isolated container over a bind-mounted workspace, carrying a per-dispatch signed identity token, streaming events to SSE; chat memory is durable. Verified end-to-end on Docker and through the terminal.
 - **On the roadmap:** auth-spine + owner-checks, bucket/transcript/token encryption, calendar + email integrations. `agent · identity · gateway` are hardening; contract-conformance gates + golden fixtures ship in-repo.
 
