@@ -15,8 +15,9 @@ slim image from `<service>/Dockerfile`:
 
 Every service answers `GET /health` and carries a compose healthcheck; `depends_on` waits on
 `condition: service_healthy` so the bring-up is ordered. The `runtime` mounts
-`/var/run/docker.sock` and spawns the bot (`BROWSER_IMAGE=vexaai/vexa-bot:dev`, published — a
-reference, never built here) on demand and the per-dispatch agent worker
+`/var/run/docker.sock` and spawns the bot (`BROWSER_IMAGE`, **built from source** via `make bot` and
+spawned **without pulling** — the published `vexaai/vexa-bot:dev` is the old 0.10 line, incompatible
+with this stack's `lifecycle.v1`) on demand and the per-dispatch agent worker
 (`vexaai/v012-agent-worker:dev`, a `build-only` compose profile); neither is a long-running compose
 service.
 

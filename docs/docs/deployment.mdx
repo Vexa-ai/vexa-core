@@ -15,10 +15,14 @@ curl -fsSL https://get.docker.com | sh
 git clone https://github.com/Vexa-ai/vexa-core.git && cd vexa-core
 
 make all      # full stack via Docker Compose — each service in its own container
+make bot      # build the meeting bot FROM SOURCE — required before a bot can join a meeting
 ```
 
 `make all` seeds `.env` from `.env.example`, brings the stack up, and **prints an API key plus the
-service URLs** when it's done. For a transcript, set a **transcription (STT) token** in `.env`
+service URLs** when it's done. The **meeting bot is built from source** (`make bot`), **not pulled** —
+the published `vexaai/vexa-bot:dev` on Docker Hub is the older 0.10 line and is **not compatible** with
+this stack's `lifecycle.v1` (bots reach `joining` then fail). `make all` warns loudly if the bot image
+is missing. For a transcript, set a **transcription (STT) token** in `.env`
 (`TRANSCRIPTION_SERVICE_TOKEN`) — get one at `vexa.ai/account`, or self-host the transcription service on
 a GPU for a fully air-gapped install. The API is then at `http://localhost:18056` (the gateway) and the
 terminal web workbench at `http://localhost:13000`.
@@ -36,7 +40,10 @@ terminal web workbench at `http://localhost:13000`.
 | redis · postgres · **minio** | bus + scheduler · metadata · object storage (recordings + workspaces) |
 
 The **bot is not a long-running service** — the [runtime](/core/runtime) spawns a browser container per
-meeting (`BROWSER_IMAGE`) and an agent container per dispatch (`AGENT_IMAGE`), then reaps them.
+meeting (`BROWSER_IMAGE`) and an agent container per dispatch (`AGENT_IMAGE`), then reaps them. The
+`BROWSER_IMAGE` is **built from source** here (`make bot`) and the runtime spawns it **without pulling**
+— so it must exist locally before any bot can join (build it once; `make all` checks and warns if it's
+absent).
 
 ## Configuration
 

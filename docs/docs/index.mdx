@@ -10,6 +10,10 @@ description: "Sandboxed AI agents that grow corporate knowledge from your meetin
 
 Real-time transcripts from Google Meet, Zoom, and Teams (Whisper included), fed to agents that build knowledge as code — fully self-hosted.
 
+<Note>
+  **▶ Try the live demo: [core.vexa.ai](https://core.vexa.ai)** — the Vexa Terminal workbench, running the full stack. No install. Or [self-host it](#try-it) below.
+</Note>
+
 Vexa tightens the loop every organization runs on: **sense → think → act**. Meetings and docs are
 the data; agents turn data into signal, and signal into action that changes the world. The faster that
 loop turns, the smarter the org gets.
@@ -72,13 +76,16 @@ them.
 ## Try it
 
 ```bash
-git clone https://github.com/Vexa-ai/vexa-core.git && cd vexa
+git clone https://github.com/Vexa-ai/vexa-core.git && cd vexa-core
 make all      # full stack via Docker Compose — seeds .env, brings everything up, prints your API key + URLs
+make bot      # build the meeting bot from source — needed before a bot can join a meeting
 ```
 
 The API comes up at `http://localhost:18056` (gateway) and the terminal web
 workbench at `http://localhost:13000`. Full options — air-gapped, bring-your-own
 inference — in [Deployment](/deployment).
+
+**Prefer to look before you build?** The same stack runs hosted at **[core.vexa.ai](https://core.vexa.ai)** — no install.
 
 ## Why Vexa
 
