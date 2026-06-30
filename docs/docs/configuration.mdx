@@ -46,18 +46,32 @@ stays GPU-free and reaches it over the network via the two variables above.
 | `MINIO_BUCKET` | `vexa` | Bucket holding recordings and agent workspaces. |
 | `MINIO_SECURE` | `false` | Use TLS to reach MinIO. |
 
-## Agent inference (bring your own)
+## Agent inference (models & runners)
 
-Point the agent at your own model so no inference leaves the network.
+The agent runs as **Claude Code** (the `claude-code` runner) inside the per-dispatch worker container.
+The **runtime brokers credentials into that worker** — subscription creds are mounted read-only; API-style
+provider env (`ANTHROPIC_*`) is copied from the trusted runtime into the spawned worker. You point the
+runner at any provider via **`ANTHROPIC_BASE_URL` + a token**; the model is chosen with `VEXA_AGENT_MODEL`
+(agent) / `VEXA_MEETING_MODEL` (live-meeting copilot). See the full recipes in
+[How-to → Models & inference](/how-to/models).
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `VEXA_AGENT_MODEL` | — | Model the agent runner uses. |
-| `VEXA_MEETING_MODEL` | — | Model for meeting-time processing. |
-| `ANTHROPIC_API_KEY` | — | Key for Anthropic-backed runners. |
-| `ANTHROPIC_MODEL` · `ANTHROPIC_DEFAULT_OPUS_MODEL` · `…_SONNET_MODEL` · `…_HAIKU_MODEL` | — | Per-tier model overrides. |
-| `HOST_CLAUDE_CREDENTIALS` | — | Host path to Claude credentials mounted into agent containers. |
+| `VEXA_AGENT_MODEL` | — (runner default) | Model the agent runner uses. Unset → the runner's own default. |
+| `VEXA_MEETING_MODEL` | `deepseek/deepseek-v4-flash` | Model for the live-meeting copilot (an OpenRouter route by default). |
+| `ANTHROPIC_BASE_URL` | — | **Provider endpoint** the runner sends to: unset → `api.anthropic.com`; `https://openrouter.ai/api` for OpenRouter; `http://<host>:<port>` for a self-hosted Anthropic-compatible gateway. |
+| `ANTHROPIC_AUTH_TOKEN` | — | Bearer token for `ANTHROPIC_BASE_URL` (e.g. an `sk-or-…` OpenRouter key, or your proxy's token). A boot preflight warns if the token prefix and the base-URL host disagree. |
+| `ANTHROPIC_API_KEY` | — | `sk-ant-…` key for Anthropic's own API (the default endpoint). |
+| `HOST_CLAUDE_CREDENTIALS` | — | Host path to a Claude **subscription** creds file (`~/.claude/.credentials.json`); mounted read-only into the worker at `/root/.claude/.credentials.json` so the runner uses OAuth instead of an API key. |
+| `ANTHROPIC_MODEL` · `ANTHROPIC_DEFAULT_OPUS_MODEL` · `…_SONNET_MODEL` · `…_HAIKU_MODEL` | — | Per-tier model overrides passed to the runner. |
 | `VEXA_AGENT_DEFAULT_SUBJECT` | `u_live` | Fallback subject before the gateway fronts agent-api. |
+
+<Note>
+**Runners.** Today the only agent runner is **`claude-code`** (`VEXA_RUNNER=claude-code`). Models are
+fully swappable underneath it (Anthropic · OpenRouter · self-hosted), but using a *different agent*
+(an open-source coding agent) requires a new **runner adapter** — see
+[How-to → Models & inference § Open-source agents](/how-to/models#open-source-agents-instead-of-claude-code).
+</Note>
 
 ## Images & runtime
 

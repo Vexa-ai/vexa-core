@@ -1,0 +1,107 @@
+---
+title: "Models & inference"
+description: "Point the agent at Anthropic, OpenRouter, or a self-hosted/local model — and what it takes to swap the agent runner itself."
+---
+
+The agent runs as **Claude Code** (the `claude-code` runner) inside the per-dispatch worker container.
+Claude Code speaks the **Anthropic Messages API** (`/v1/messages`), so any model you want the agent to
+use must be reachable over an **Anthropic-compatible endpoint**. You select the provider with two env
+vars and the model with a third:
+
+| Knob | What it does |
+|---|---|
+| `ANTHROPIC_BASE_URL` | the provider endpoint the runner calls (unset ⇒ `api.anthropic.com`) |
+| `ANTHROPIC_AUTH_TOKEN` / `ANTHROPIC_API_KEY` | the bearer token / API key for that endpoint |
+| `VEXA_AGENT_MODEL` / `VEXA_MEETING_MODEL` | the model id for the agent / the live-meeting copilot |
+
+The **runtime brokers these into the spawned worker** — subscription creds are mounted read-only, and
+API-style `ANTHROPIC_*` env is copied from the trusted runtime service into the worker (it never lives
+in the worker image). Set them in `deploy/compose/.env` and recreate the runtime:
+
+```bash
+# after editing deploy/compose/.env
+docker compose -p vexa-v012 -f docker-compose.yml up -d runtime
+```
+
+A **boot preflight** warns loudly if the token prefix and the base-URL host disagree (an `sk-or-…` token
+must go to `openrouter.ai`, an `sk-ant-…` token to `api.anthropic.com`) — so a mismatched pair fails
+visibly instead of silently 401-ing mid-turn.
+
+## Anthropic (API key)
+
+```bash
+# deploy/compose/.env
+ANTHROPIC_API_KEY=sk-ant-...
+VEXA_AGENT_MODEL=claude-sonnet-4-5-20250929   # optional; unset ⇒ the runner default
+```
+
+## Anthropic (Claude subscription — reuse Claude Code creds)
+
+Use your Claude Pro/Max subscription instead of an API key by mounting the host's Claude Code OAuth creds:
+
+```bash
+# on the host: log in once so the creds file exists
+claude auth login                              # writes ~/.claude/.credentials.json
+
+# deploy/compose/.env  — leave ANTHROPIC_API_KEY empty
+HOST_CLAUDE_CREDENTIALS=/root/.claude/.credentials.json
+```
+
+The runtime bind-mounts that file read-only into each worker at `/root/.claude/.credentials.json`, and
+the runner authenticates via OAuth. Note: the mount is **read-only** and OAuth tokens expire/refresh —
+keep the host file fresh (or prefer an API key for an unattended long-running deploy).
+
+## OpenRouter
+
+OpenRouter exposes an Anthropic-compatible endpoint, so it's a drop-in — this is how the default
+live-meeting copilot runs (`VEXA_MEETING_MODEL=deepseek/deepseek-v4-flash`):
+
+```bash
+# deploy/compose/.env
+ANTHROPIC_BASE_URL=https://openrouter.ai/api
+ANTHROPIC_AUTH_TOKEN=sk-or-...
+VEXA_AGENT_MODEL=anthropic/claude-sonnet-4.5      # or deepseek/…, meta-llama/…, qwen/… — any OpenRouter id
+```
+
+## Self-hosted / local models
+
+Point `ANTHROPIC_BASE_URL` at **any endpoint that speaks the Anthropic Messages API**. Most local model
+servers (Ollama, vLLM, llama.cpp, TGI) speak the *OpenAI* format, so put a thin translating gateway in
+front — e.g. **[LiteLLM](https://docs.litellm.ai/)** — that exposes `/v1/messages` and forwards to your
+local server. Nothing leaves your network:
+
+```bash
+# 1) run a local model (example: Ollama) and a LiteLLM proxy that exposes the Anthropic API
+#    litellm --model ollama/llama3.1 --port 4000   (config maps your model -> anthropic passthrough)
+
+# 2) deploy/compose/.env — point the agent at the proxy
+ANTHROPIC_BASE_URL=http://<proxy-host>:4000
+ANTHROPIC_AUTH_TOKEN=<your-proxy-token>
+VEXA_AGENT_MODEL=llama3.1
+```
+
+Use the host's LAN IP (not `localhost`) for `<proxy-host>` so the spawned worker container can reach it,
+or attach the proxy to the compose network. Any provider with an Anthropic-compatible gateway (Bedrock,
+Vertex via a shim, a corporate LLM gateway) works the same way.
+
+## Open-source agents instead of Claude Code
+
+Today the **only agent runner is `claude-code`** (`VEXA_RUNNER` is threaded through dispatch but defaults
+to — and is only implemented for — `claude-code`). The recipes above swap the **model** under that runner;
+they do **not** swap the agent itself.
+
+Swapping in a different agent (an open-source coding agent — aider, OpenHands, opencode, goose, …) means
+writing a **runner adapter** against the existing seam:
+
+- the runner is an injected `ClaudeExec = Callable[[argv, cwd], Iterable[str]]`
+  ([`worker/decision_claude.py`](https://github.com/Vexa-ai/vexa-core/blob/main/core/agent/worker/decision_claude.py)) —
+  it just yields the process's stdout lines;
+- `build_argv()` constructs the Claude Code CLI invocation (`claude -p … --output-format stream-json`);
+- `parse_stream_json()` normalizes Claude Code's stream-json into the engine's `UnitEvent`s
+  (`message-delta` · `tool-call` · `tool-result` · `done`).
+
+An adapter for another agent supplies its own `build_argv` (that agent's CLI) and a parser that maps its
+output to the same `UnitEvent` stream — and must preserve the governance gate (every changed
+`kg/entities/**.md` is re-validated against `workspace.v1` post-write; non-conformant writes are reverted,
+not committed). Until that adapter exists, run an open-source **model** under `claude-code` via the
+self-hosted recipe above — that already keeps all inference open and on your own infra.
