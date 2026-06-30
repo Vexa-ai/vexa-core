@@ -57,7 +57,7 @@ class Settings(BaseSettings):
     # Registry of workspace templates (workspace-seeds/<name>/); `default_template` selects one.
     # `seeding.resolve_seed_dir` is the selection seam (honors the VEXA_WORKSPACE_SEED_DIR override).
     workspace_seeds_dir: str = "/app/workspace-seeds"
-    default_template: str = "default"
+    default_template: str = "finos"  # FINOS-ecosystem KG seed; override with VEXA_DEFAULT_TEMPLATE=default for the bare scaffold
     agent_model: str = ""
     meeting_model: str = ""
     meeting_idle_timeout_sec: int = Field(default=4 * 60 * 60, ge=60)
