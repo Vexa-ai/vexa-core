@@ -1,0 +1,25 @@
+name: gates
+on: [push, pull_request]
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # version comes from package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm } # pnpm 11.7 requires Node >= 22.13
+      - uses: astral-sh/setup-uv@v5
+      - run: pnpm install --frozen-lockfile
+      # the compliance bar — each gate is its own step so a failure is unambiguous
+      - run: pnpm gate:readme
+      - run: pnpm gate:isolation
+      - run: pnpm gate:exports
+      - run: pnpm gate:graph
+      - run: pnpm gate:schema
+      - run: pnpm gate:contract-version
+      - run: pnpm gate:python
+      - run: pnpm gate:licenses
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
