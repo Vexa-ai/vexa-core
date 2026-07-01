@@ -235,6 +235,14 @@ def _model_error_event(message: object, *, model: str | None, stage: str) -> dic
     return {"type": "model-error", "error": {"stage": stage, "model": model or "", "message": text[:600]}}
 
 
+# The live card beat is a PURE clean+tag turn: everything it needs is already in the prompt window. The
+# old ["Read"] grant let the model EXPLORE the workspace every beat — CLAUDE.md primes it as a "knowledge
+# agent", so it Read/Glob/Grep'd the KG (~17 tool round-trips/beat measured), the dominant per-beat
+# latency. An empty allowlist emits `--allowedTools ""` (verified deny-all: 0 tool calls, single turn),
+# so the beat is one fast completion focused on the transcript. `[""]` → build_argv joins to "".
+_CARD_TURN_NO_TOOLS: list[str] = [""]
+
+
 def meeting_card_turn(
     work: Path, segments: list[dict], *, model: str | None = None,
     card_kinds: list[str] | None = None, steering: str = "",
@@ -265,7 +273,7 @@ def meeting_card_turn(
     # propose-only: a read-only turn (no Write/Edit). We DON'T forward the streaming turn events — the
     # raw JSON reply would leak into the UI as a "note"; the meeting feed wants only the parsed cards.
     try:
-        for ev in run_turn_over_workspace(work, prompt, model=model, allowed_tools=["Read"], commit=False, session_continuity=False):
+        for ev in run_turn_over_workspace(work, prompt, model=model, allowed_tools=_CARD_TURN_NO_TOOLS, commit=False, session_continuity=False):
             if ev.get("type") == "message-delta" and ev.get("text"):
                 chunks.append(str(ev.get("text") or ""))
             if ev.get("type") == "done":

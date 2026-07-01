@@ -61,7 +61,7 @@ def test_models_reports_chat_and_workspace_streaming_model(tmp_path):
 
     meeting_cfg = tmp_path / "u_jane" / "agents" / "meeting.md"
     meeting_cfg.parent.mkdir(parents=True)
-    meeting_cfg.write_text("---\nmodel: openrouter/free\n---\n")
+    meeting_cfg.write_text("---\nmodel: claude-sonnet-4-5-20250929\n---\n")
     c = TestClient(create_app(
         Dispatcher(
             load_settings(agent_model="deepseek/deepseek-v4-flash", meeting_model="deepseek/deepseek-v4-flash"),
@@ -75,7 +75,7 @@ def test_models_reports_chat_and_workspace_streaming_model(tmp_path):
 
     assert r.status_code == 200
     assert r.json()["chat_model"] == "deepseek/deepseek-v4-flash"
-    assert r.json()["streaming_model"] == "openrouter/free"
+    assert r.json()["streaming_model"] == "claude-sonnet-4-5-20250929"
 
 
 def test_invocations_dispatches():

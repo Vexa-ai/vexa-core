@@ -22,15 +22,19 @@ import yaml
 log = logging.getLogger(__name__)
 
 # The default live-meeting model. Env (``VEXA_MEETING_MODEL``) can pin an operator-selected route; the
-# committed fallback is a CAPABLE route so cleaning/cards are reliable out of the box (reliability over
-# the old zero-cost "openrouter/free" default).
-DEFAULT_MEETING_MODEL = os.environ.get("VEXA_MEETING_MODEL") or "deepseek/deepseek-v4-flash"
+# committed fallback is Claude Haiku — a fast, cheap, first-class Claude model. The copilot runs
+# ``claude --model <this>``, so the fallback must be a name the CONFIGURED PROVIDER understands. We now
+# run against DIRECT Claude (api.anthropic.com), where OpenRouter-style routes ("deepseek/…",
+# "openrouter/free") do NOT resolve — Haiku does, and is cheap enough for the per-beat copilot cadence.
+DEFAULT_MEETING_MODEL = os.environ.get("VEXA_MEETING_MODEL") or "claude-haiku-4-5-20251001"
 
-# A model named in config must be on this allowlist. Anything else falls back to the default with a log
-# line; the config file is governed but user-editable, so a typo cannot silently pin an unexpected route.
+# A model named in a workspace's agents/meeting.md must be on this allowlist; anything else falls back to
+# DEFAULT_MEETING_MODEL with a log line. That fallback is what lets a STALE OpenRouter route ("openrouter/
+# free", "deepseek/…") left in an already-seeded workspace SELF-HEAL to the default, instead of being
+# handed to `claude --model` and failing under direct Claude. These are the DIRECT-Claude routes (the
+# committed provider posture); an operator on another provider sets VEXA_MEETING_MODEL — the env feeds the
+# default and is NOT allowlist-gated — rather than pinning a non-Claude route in the workspace file.
 MODEL_ALLOWLIST: frozenset[str] = frozenset({
-    "openrouter/free",
-    "deepseek/deepseek-v4-flash",
     "claude-haiku-4-5-20251001",
     "claude-sonnet-4-20250514",
     "claude-sonnet-4-5-20250929",
@@ -55,9 +59,9 @@ DEFAULT_POLISH_RULES = (
     "(\"Speaker says\", \"the speaker describes\", \"they talk about\")."
 )
 DEFAULT_TAG_RULES = (
-    "Extract two kinds of tags from THESE lines and mark them actionable. (1) ENTITIES: person, "
-    "company, product, and any concrete number. (2) SIGNALS: decision, action-item, question, and "
-    "claim. Surface only what is concretely present in the lines — do not invent."
+    "Highlight ENTITY KEYWORDS worth researching: people, companies, and products/technologies "
+    "mentioned by name. Surface only concrete named entities present in the lines — do not invent. "
+    "Do NOT tag signals (decisions, action items, questions, claims) or plain numbers; entities only."
 )
 
 
