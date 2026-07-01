@@ -60,6 +60,13 @@ class Settings(BaseSettings):
     default_template: str = "finos"  # FINOS-ecosystem KG seed; override with VEXA_DEFAULT_TEMPLATE=default for the bare scaffold
     agent_model: str = ""
     meeting_model: str = ""
+    # ── llm module dials (provider-agnostic; see core/agent/llm/README.md) ────
+    # Non-secret operator config forwarded into workers by dispatch. The SECRETS
+    # (VEXA_LLM_API_KEY / VEXA_LLM_BASE_URL) deliberately have no Settings field — they travel by
+    # runtime credential brokering (docker_backend), same as ANTHROPIC_*.
+    llm_provider: str = ""      # CompletionPort adapter key (openai-compat | anthropic); empty = default
+    llm_model: str = ""         # deployment-default model (free string)
+    model_allowlist: str = ""   # optional comma-separated gate on workspace-pinned models
     meeting_idle_timeout_sec: int = Field(default=4 * 60 * 60, ge=60)
 
     # ── MVP3 toolbelt — tool.v1 descriptors + MCP launch specs (the generic tool mechanism) ──
