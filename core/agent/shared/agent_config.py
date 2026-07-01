@@ -55,9 +55,9 @@ DEFAULT_POLISH_RULES = (
     "(\"Speaker says\", \"the speaker describes\", \"they talk about\")."
 )
 DEFAULT_TAG_RULES = (
-    "Extract two kinds of tags from THESE lines and mark them actionable. (1) ENTITIES: person, "
-    "company, product, and any concrete number. (2) SIGNALS: decision, action-item, question, and "
-    "claim. Surface only what is concretely present in the lines — do not invent."
+    "Highlight ENTITY KEYWORDS worth researching: people, companies, and products/technologies "
+    "mentioned by name. Surface only concrete named entities present in the lines — do not invent. "
+    "Do NOT tag signals (decisions, action items, questions, claims) or plain numbers; entities only."
 )
 
 
