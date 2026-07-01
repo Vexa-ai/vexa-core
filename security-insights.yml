@@ -74,6 +74,20 @@ repository:
     review-policy: https://github.com/Vexa-ai/vexa-core/blob/main/CONTRIBUTING.md#how-to-contribute
     security-policy: https://github.com/Vexa-ai/vexa-core/blob/main/SECURITY.md
     governance: https://github.com/Vexa-ai/vexa-core/blob/main/CONTRIBUTING.md#governance
+    dependency-management-policy: https://github.com/Vexa-ai/vexa-core/blob/main/CONTRIBUTING.md#dependency-management
+  release:
+    distribution-points:
+      - uri: https://github.com/Vexa-ai/vexa-core/releases
+        comment: GitHub Releases is the only official distribution point (source archives).
+    attestations:
+      - name: SLSA build provenance
+        predicate-uri: https://slsa.dev/provenance/v1
+        location: https://github.com/Vexa-ai/vexa-core/attestations
+        comment: |
+          Each release's source archive is attested with GitHub Artifact
+          Attestations (actions/attest-build-provenance, SLSA provenance v1) by
+          the release-attest workflow; verify with
+          `gh attestation verify <artifact> --repo Vexa-ai/vexa-core`.
   security:
     assessments:
       self:

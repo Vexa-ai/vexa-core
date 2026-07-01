@@ -59,6 +59,28 @@ See the [documentation](https://docs.core.vexa.ai) and the repository `Makefile`
 and `deploy/` topologies. An artifact "exists" only when the project's automated
 gates are green.
 
+## Dependency management
+
+How dependencies enter and stay in this repository:
+
+- **Manifests + lockfiles are the single source of truth.** JavaScript/TypeScript dependencies are
+  declared per package and resolved by the pnpm workspace (`pnpm-lock.yaml`); each Python package
+  declares its own `pyproject.toml` resolved by `uv` (`uv.lock`). CI installs with
+  `--frozen-lockfile` / `--frozen`, so an unreviewed resolution change cannot land.
+- **License policy is CI-enforced** (`pnpm gate:licenses`, run on every push/PR): FINOS Category A
+  (permissive) licenses pass; Category B (weak copyleft — LGPL/MPL/EPL) requires a reasoned entry
+  in [`license-exceptions.json`](license-exceptions.json); Category X (GPL/AGPL/SSPL/BSL/…) and any
+  unclassified license fail the build.
+- **Adding or upgrading a dependency** happens only via a pull request in which the manifest,
+  lockfile, and (if Category B) the exception entry change together; the `gates` status check must
+  be green before merge. Prefer the standard library or an existing dependency over adding a new
+  one — every new dependency is supply-chain surface.
+- **Vulnerability response**: GitHub Dependabot alerts and secret scanning (with push protection)
+  are enabled on the repository; advisories against pinned versions are triaged by the maintainers
+  under the process in [SECURITY.md](SECURITY.md).
+
+## Governance
+
 ## Governance
 
 This project follows FINOS governance. See the
