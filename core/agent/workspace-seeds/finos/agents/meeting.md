@@ -1,6 +1,7 @@
 ---
 enabled: true
-model: openrouter/free               # must be in the allowlist; else falls back to the default + logs
+# model: <any provider route>        # unset = the deployment default (VEXA_MEETING_MODEL / VEXA_LLM_MODEL);
+#                                    # a free string passed to the provider; VEXA_MODEL_ALLOWLIST can gate it
 cadence_segments: 4                  # run a copilot beat every N completed segments (or on a new speaker)
 card_kinds: [person, company, product]
 write_meeting_doc: true              # author the post-meeting kg entity on session_end
