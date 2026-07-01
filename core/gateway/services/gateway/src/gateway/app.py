@@ -109,7 +109,7 @@ def create_app(
             "user_id": user_data["user_id"],
             "email": user_data.get("email", ""),
             "scopes": user_data.get("scopes", []),
-            "max_concurrent": user_data.get("max_concurrent", 1),
+            "max_concurrent": user_data.get("max_concurrent", 3),
         }
 
     # --- auth + identity prep, shared by the buffered REST proxy (_forward) and the streaming proxy
@@ -191,7 +191,7 @@ def create_app(
         headers["x-api-key"] = client_key
         headers["x-user-id"] = str(user_id)
         headers["x-user-scopes"] = ",".join(user_data.get("scopes", []))
-        headers["x-user-limits"] = str(user_data.get("max_concurrent", 1))
+        headers["x-user-limits"] = str(user_data.get("max_concurrent", 3))
         # Per-user webhook config (identity owns it; /internal/validate returns it from user.data).
         # Forwarded so bot_spawn persists it into meeting.data → the lifecycle callback delivers from
         # there, with NO cross-domain users-table read (the carve's principled path; main read the user
