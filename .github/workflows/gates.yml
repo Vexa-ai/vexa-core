@@ -18,6 +18,9 @@ jobs:
       - run: pnpm gate:graph
       - run: pnpm gate:schema
       - run: pnpm gate:contract-version
+      # the runtime docker-backend lifecycle test creates containers via the docker socket API,
+      # which (unlike `docker run`) does NOT implicit-pull — pre-pull its fixture image
+      - run: docker pull alpine
       - run: pnpm gate:python
       - run: pnpm gate:licenses
       - run: pnpm typecheck
