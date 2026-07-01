@@ -8,10 +8,8 @@ leadership over time.
 
 | GitHub Username | Name | Organization | Email |
 |-----------------|------|--------------|-------|
-| @DmitryG228 | Dmitry Grankin | Vexa | dmitry@vexa.ai |
-
-> A co-maintainer from a FINOS member organization will be added during project
-> socialization, per the FINOS contribution requirements.
+| @DmitriyG228 | Dmitry Grankin | Vexa | dmitry@vexa.ai |
+| @psmulovics | Peter Smulovics | Morgan Stanley | Peter.Smulovics@morganstanley.com |
 
 For information about maintainer responsibilities and resources, see the
 [FINOS Maintainers Cheatsheet](https://community.finos.org/docs/finos-maintainers-cheatsheet).
