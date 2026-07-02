@@ -15,7 +15,8 @@ from typing import Iterable, Optional
 import contracts
 from shared.adapters import _git, parse_entity
 
-_ENTITY_RE = re.compile(r"^kg/entities/.+\.md$")
+# index.md / log.md are OKF v0.1 reserved files — listings/history WITHOUT frontmatter, not entities.
+_ENTITY_RE = re.compile(r"^kg/entities/(?!(?:.*/)?(?:index|log)\.md$).+\.md$")
 
 
 def changed_entity_files(work_dir: str | Path) -> list[str]:
