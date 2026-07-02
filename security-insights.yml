@@ -3,8 +3,8 @@
 # Consumed by tooling such as the OSPS Baseline scanner (ossf/pvtr-github-repo-scanner).
 header:
   schema-version: 2.2.0
-  last-updated: '2026-07-01'
-  last-reviewed: '2026-07-01'
+  last-updated: '2026-07-02'
+  last-reviewed: '2026-07-02'
   url: https://raw.githubusercontent.com/Vexa-ai/vexa-core/main/security-insights.yml
   comment: |
     Single-repository security-insights file for Vexum Core, the neutral,
@@ -91,7 +91,12 @@ repository:
   security:
     assessments:
       self:
+        evidence: https://github.com/Vexa-ai/vexa-core/blob/main/security/osps-baseline/2026-07-02-assessment.yaml
+        date: '2026-07-02'
         comment: |
-          A formal self-assessment has not yet been completed. The project is
-          targeting OSPS Baseline Maturity Level 2 and will publish a
-          self-assessment ahead of FINOS incubation.
+          OSPS Baseline self-assessment (ossf/pvtr-github-repo-scanner v0.24.0,
+          catalog osps-baseline-2026-02, Maturity Levels 1+2): 28 passed,
+          0 failed, 1 warning (a scanner false-positive; GitHub Actions is
+          enabled and the gates workflow runs on every push/PR). Dated results
+          are committed under security/osps-baseline/. The project targets
+          OSPS Baseline Maturity Level 2 for FINOS incubation.
