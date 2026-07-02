@@ -33,9 +33,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends git ca-certific
     npm install -g @anthropic-ai/claude-code && \
     apt-get purge -y curl gnupg && apt-get autoremove -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# The worker's own packages (NO control_plane): worker + shared + contracts, copied to /app so
-# `PYTHONPATH=/app` resolves them as top-level imports.
+# The worker's own packages (NO control_plane): worker + llm + shared + contracts, copied to /app so
+# `PYTHONPATH=/app` resolves them as top-level imports. llm/ is the provider-agnostic ports module
+# (completion adapters + the claude-code harness adapter the npm install above serves).
 COPY core/agent/worker ./worker
+COPY core/agent/llm ./llm
 COPY core/agent/shared ./shared
 COPY core/agent/contracts ./contracts
 # The registry of per-person workspace templates the worker seeds new workspaces from (Phase 3) +

@@ -32,7 +32,7 @@ from pydantic import BaseModel
 from control_plane import routines as routines_mod
 from shared import units
 from control_plane import workspace_routines as workspace_routines_mod
-from shared.agent_config import DEFAULT_MEETING_MODEL, load_meeting_config
+from shared.agent_config import default_meeting_model, load_meeting_config
 from shared.seeding import resolve_seed_dir, seed_workspace, validate_seed
 from control_plane.workspace_attach import CloneError, attached_workspaces, rename_workspace, swap_workspace
 from control_plane.dispatch import Dispatcher
@@ -407,9 +407,13 @@ def create_app(
     @app.get("/api/models")
     def models(request: Request):
         subject = subject_of(request)
-        streaming_model = settings.meeting_model or DEFAULT_MEETING_MODEL
+        streaming_model = settings.meeting_model or default_meeting_model() or "default"
         try:
-            streaming_model = load_meeting_config(wsr.workspace_dir(subject)).model
+            # A workspace-pinned model (free string) wins; an unpinned workspace ("" — deployment
+            # default) must NOT blank the label out.
+            workspace_model = load_meeting_config(wsr.workspace_dir(subject)).model
+            if workspace_model:
+                streaming_model = workspace_model
         except ValueError:
             pass
         chat_model = settings.agent_model or "default"
