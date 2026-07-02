@@ -23,3 +23,9 @@ agree a public-disclosure timeline with you.
 
 Vexum Core is under active development. Security fixes are applied to the `main`
 branch and the latest release line. Please test against `main` before reporting.
+
+## OSPS Baseline
+
+The project tracks the [OSPS Baseline](https://baseline.openssf.org/) (target: Maturity Level 2, a
+FINOS Incubation commitment). Dated self-assessment results live in
+[`security/osps-baseline/`](security/osps-baseline/) — latest: **2026-07-02, 28 passed · 0 failed**.
