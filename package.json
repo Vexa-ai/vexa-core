@@ -19,12 +19,15 @@
     "gate:graph": "node scripts/gates.mjs graph",
     "gate:schema": "node scripts/gates.mjs schema",
     "gate:contract-version": "node scripts/gates.mjs contract-version",
+    "gate:dataflow": "node scripts/gates.mjs dataflow",
     "seal:contracts": "node scripts/gates.mjs seal",
+    "seal:arch": "node scripts/gates.mjs seal-arch",
+    "arch:dsl": "node scripts/arch-dsl.mjs",
     "gate:python": "node scripts/gates.mjs python",
     "gate:stack": "node scripts/gates.mjs stack",
     "gate:node": "node scripts/gates.mjs node",
     "gate:licenses": "node scripts/gates.mjs licenses",
-    "gate:calm": "npx -y @finos/calm-cli@1.47.1 validate -p calm/patterns/meeting-intelligence.pattern.json -a calm/architecture.calm.json",
+    "gate:calm": "npx -y @finos/calm-cli@1.47.1 validate -p calm/patterns/meeting-intelligence.pattern.json -a architecture.calm.json",
     "gates": "node scripts/gates.mjs all"
   },
   "devDependencies": {
