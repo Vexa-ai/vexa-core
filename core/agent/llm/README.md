@@ -19,7 +19,9 @@ fakes.
 
 - **Completions**: `openai_compat.py` (DEFAULT — OpenRouter, Ollama, vLLM, LM Studio, OpenAI, any
   gateway speaking `POST {base}/chat/completions`) · `anthropic_api.py` (the Messages dialect —
-  api.anthropic.com, LiteLLM proxies, DeepSeek/GLM Anthropic-compatible endpoints).
+  api.anthropic.com, LiteLLM proxies, DeepSeek/GLM Anthropic-compatible endpoints) ·
+  `claude_cli.py` (beats via the claude CLI on mounted SUBSCRIPTION credentials — no API key;
+  slower per beat; for subscription-only deployments).
 - **Harnesses**: `claude_code.py` (the `claude` CLI — argv build, stream-json parsing, `.claude/`
   continuity + skills wiring, credential preflight). Open-source runners (OpenCode, Aider, Goose)
   slot in as new adapter files + one registry line.

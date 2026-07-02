@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 
 from llm.anthropic_api import AnthropicCompletion
+from llm.claude_cli import ClaudeCliCompletion
 from llm.claude_code import ClaudeCodeHarness
 from llm.errors import LLMConfigError
 from llm.openai_compat import OpenAICompatCompletion
@@ -21,6 +22,8 @@ from llm.ports import CompletionPort, HarnessPort
 COMPLETION_PROVIDERS: dict[str, type] = {
     "openai-compat": OpenAICompatCompletion,
     "anthropic": AnthropicCompletion,
+    # Subscription-credential deployments: beats ride the claude CLI (no API key needed).
+    "claude-cli": ClaudeCliCompletion,
 }
 
 HARNESS_RUNNERS: dict[str, type] = {
