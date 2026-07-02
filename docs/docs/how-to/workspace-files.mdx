@@ -4,7 +4,8 @@ description: "Read the knowledge base over the API, add documents, or attach you
 ---
 
 The [workspace](/concepts#workspace) is a git folder of Markdown — knowledge, plans, and the agent's
-session, all just files with no dictated structure. Every workspace route derives your identity from the
+session, all just files. The knowledge itself follows an open standard
+([OKF](#the-knowledge-graph-is-an-okf-bundle), below). Every workspace route derives your identity from the
 API key; you never pass a subject.
 
 ## Browse and read
@@ -24,6 +25,44 @@ curl -H "X-API-Key: $API_KEY" "$API_BASE/agent/workspace/git"
 
 Pass `hidden=true` to `tree` to include dotfiles. `git` is the durable state and the undo — every agent
 write is a commit.
+
+## The knowledge graph is an OKF bundle
+
+The `kg/` subtree follows the
+[Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/tree/main/okf) (OKF)
+v0.1 — Google's open, vendor-neutral standard for markdown knowledge. Each entity is one file at
+`kg/entities/<type>/<slug>.md` with YAML frontmatter:
+
+```markdown
+---
+type: company            # OKF's only required key
+id: acme-corp            # Vexum-required: stable slug, unique per type
+title: Acme Corp         # Vexum-required: human title
+description: Design-partner prospect, met at OSFF.   # OKF recommended
+resource: https://acme.example.com                   # OKF recommended
+tags: [prospect]
+timestamp: 2026-07-02T14:00:00Z
+---
+
+Body is plain markdown. Entities cross-reference each other with [[wikilinks]]
+by title — the knowledge graph emerges from the links.
+```
+
+Vexum's frontmatter contract (`type`/`id`/`title` required, per the
+[`workspace.v1` schema](https://github.com/Vexa-ai/vexa-core/blob/main/core/agent/contracts/workspace.v1/workspace.schema.json))
+is a strict superset of OKF, which requires only `type` — so every workspace is a conformant bundle any
+OKF consumer can read, and `[[wikilinks]]` are a tolerated extension.
+
+Two **reserved filenames** carry no frontmatter and are not entities:
+
+- `index.md` — a per-directory listing (`- [Title](file.md) — description`) for progressive
+  disclosure; seeded workspaces ship them generated, and the agent maintains them as entities are
+  added or removed.
+- `log.md` — optional change history, newest first, grouped under `## YYYY-MM-DD` headings.
+
+Because the bundle is just files in git, it is portable by construction: `tree` + `file` above read it
+over the API, and a `git clone` (or the swap endpoint below) moves the whole knowledge base between
+tools — nothing about it is Vexum-specific.
 
 ## Upload documents
 
