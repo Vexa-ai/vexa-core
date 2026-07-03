@@ -26,6 +26,9 @@ importers:
 
   clients/terminal:
     dependencies:
+      '@next/env':
+        specifier: 15.5.19
+        version: 15.5.19
       acorn:
         specifier: ^8.17.0
         version: 8.17.0

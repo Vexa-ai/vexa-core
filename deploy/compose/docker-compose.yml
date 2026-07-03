@@ -327,8 +327,10 @@ services:
   # The terminal is the front door for humans; the gateway remains the API front door for programmatic use.
   terminal:
     build:
-      context: ../../clients/terminal
-      dockerfile: Dockerfile
+      # repo-root context: pnpm workspace install (see clients/terminal/Dockerfile +
+      # its Dockerfile.dockerignore, which trims the context to the workspace skeleton).
+      context: ../..
+      dockerfile: clients/terminal/Dockerfile
       args:
         # Google Analytics 4 measurement id, baked into the client bundle at build time (NEXT_PUBLIC_*).
         # Set GA_MEASUREMENT_ID in .env, then rebuild the terminal image. Empty → GA stays off.

@@ -1,0 +1,12 @@
+# Context trim for the terminal build ONLY (BuildKit per-Dockerfile ignore — the root
+# .dockerignore still governs meeting-api's root-context build). Whitelist: the pnpm
+# workspace skeleton + the terminal app. Everything else in the repo stays out.
+*
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!package.json
+!core/**/package.json
+!clients/terminal/**
+clients/terminal/node_modules/
+clients/terminal/.next/
+clients/terminal/.turbo/

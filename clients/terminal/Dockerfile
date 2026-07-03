@@ -3,39 +3,54 @@
 # WebSocket upgrade to the gateway server-side. Because the server is custom (not Next's standalone
 # server.js), we ship the pruned production node_modules rather than `output: standalone` — server.mjs
 # imports `next`, `@next/env`, and `ws`, which a standalone trace would not all include.
-# Build context: clients/terminal (self-contained npm project; no @vexa/* workspace deps).
+#
+# Build context: the REPO ROOT (compose: `context: ../..`), installed with pnpm against the
+# workspace lockfile — the terminal is a first-class workspace member and can depend on
+# `@vexa/*` bricks (add `transpilePackages` in next.config.ts when importing one). The context
+# is trimmed by the adjacent Dockerfile.dockerignore (whitelist: lockfile + workspace manifests
+# + clients/terminal). The old per-app package-lock.json/npm build is gone.
 
-# node:22 — tinykeys@4 requires node >=22; 20 only warns but we pin 22 to match engines.
+# node:22 — tinykeys@4 requires node >=22; pin to match engines. pnpm pinned to the repo's
+# packageManager version (installed via npm — no corepack network/signature surprises).
 FROM node:22-slim AS build
-WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-COPY . .
+RUN npm i -g pnpm@11.7.0
+WORKDIR /repo
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+# workspace manifests only (Dockerfile.dockerignore whitelists package.json under core/) —
+# pnpm needs every importer present to honor --frozen-lockfile.
+COPY core core
+COPY clients/terminal clients/terminal
+RUN pnpm install --frozen-lockfile --filter @vexa/terminal
 # Google Analytics measurement id (G-XXXXXXXXXX). NEXT_PUBLIC_* is inlined into the client bundle at
 # BUILD time, so it must be present BEFORE `next build` (pass via --build-arg / compose build.args).
-# Empty → GA renders nothing (opt-in). Changing it requires a rebuild.
 ARG NEXT_PUBLIC_GA_MEASUREMENT_ID=""
 ENV NEXT_PUBLIC_GA_MEASUREMENT_ID=$NEXT_PUBLIC_GA_MEASUREMENT_ID
-# Regular build (not standalone): produces .next served by the custom server in production.
-RUN npm run build
+RUN pnpm --filter @vexa/terminal build
 
 FROM node:22-slim AS runtime
 ENV NODE_ENV=production \
     PORT=3000 \
     HOST=0.0.0.0
-WORKDIR /app
+RUN npm i -g pnpm@11.7.0
+WORKDIR /repo
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY core core
+COPY clients/terminal/package.json clients/terminal/package.json
 # Prod-only deps (keeps next/react/ws; drops the build toolchain), PLUS typescript — Next loads the
-# TypeScript next.config.ts at runtime and would otherwise try to auto-install it (no network in a pod).
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && npm i --no-save typescript@5 && npm cache clean --force
+# TypeScript next.config.ts at runtime and would otherwise try to auto-install it (no network in a
+# pod). typescript is installed in an ISOLATED dir and symlinked in: running npm inside the
+# pnpm-managed tree re-runs dependency `prepare` scripts (husky) even with --ignore-scripts.
+RUN pnpm install --frozen-lockfile --prod --filter @vexa/terminal \
+    && mkdir -p /opt/ts && cd /opt/ts && npm i --no-save typescript@5 \
+    && ln -s /opt/ts/node_modules/typescript /repo/clients/terminal/node_modules/typescript \
+    && pnpm store prune && npm cache clean --force
+WORKDIR /repo/clients/terminal
 # The built app + the custom server + runtime config it reads.
-COPY --from=build /app/.next ./.next
-COPY public ./public
-COPY server.mjs next.config.ts tsconfig.json ./
-# next-env.d.ts is gitignored (Next.js generates it during `next build`); take it from the build stage
-# rather than the build context, where it is absent on a clean clone.
-COPY --from=build /app/next-env.d.ts ./
-COPY src ./src
+COPY --from=build /repo/clients/terminal/.next ./.next
+COPY clients/terminal/public ./public
+COPY clients/terminal/server.mjs clients/terminal/next.config.ts clients/terminal/tsconfig.json ./
+# next-env.d.ts is gitignored (Next.js generates it during `next build`); take it from the build stage.
+COPY --from=build /repo/clients/terminal/next-env.d.ts ./
+COPY clients/terminal/src ./src
 EXPOSE 3000
-# `npm start` === PORT=3000 NODE_ENV=production node server.mjs
 CMD ["node", "server.mjs"]
