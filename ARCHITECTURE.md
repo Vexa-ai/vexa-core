@@ -1,6 +1,6 @@
-# Vexum Core — architecture
+# Vexa Core — architecture
 
-Vexum Core is a self-hostable **meeting-intelligence runtime**: bots join meetings, capture and
+Vexa Core is a self-hostable **meeting-intelligence runtime**: bots join meetings, capture and
 transcribe them in real time, and sandboxed agents turn transcripts into governed knowledge and
 actions. This document is the entry point to the system's design; the deeper, always-current
 sources it indexes are listed at the end.
