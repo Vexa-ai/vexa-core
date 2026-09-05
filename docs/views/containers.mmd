@@ -33,6 +33,10 @@ flowchart LR
     postgres["postgres"]
     minio["minio"]
   end
+  subgraph flows["flows"]
+    flows_api["flows-api"]
+    flows_worker["flows-worker"]
+  end
   slim["slim"]
   terminal["terminal"]
   dashboard["dashboard (deprecated)"]
@@ -56,3 +60,6 @@ flowchart LR
   dashboard -->|""| gateway
   dashboard -->|""| gateway
   slim -->|"HTTPS"| gateway
+  flows_worker -->|""| agent_api
+  flows_worker -->|""| gateway
+  flows_worker -->|""| admin_api
